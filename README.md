@@ -1,253 +1,90 @@
-# eWaste Hub
+# eWaste Hub · COM6103 Team 1
 
-eWaste Hub is a full-stack web application for a business-to-consumer electronic waste recycling workflow. It helps device owners submit unwanted electronics, receive classification-based next steps, and track their device status. It also provides staff and administrator workspaces for device processing, retrieval workflows, referral activity, reporting, and user management.
+谢菲尔德大学团队项目：帮助用户提交闲置电子设备，并让工作人员完成设备分类、审核、提取申请和回收处理。此私有仓库保存 **Blackboard 正式最终报告、团队 GitLab 的两个完整文件快照，以及原有 3 月后端提交历史**。
 
-## Key Features
+A full-stack electronic-waste management prototype built by COM6103 Team 1. Owners submit devices; staff process them; administrators manage users and reports. This archive retains the official final report and recovered React/Flask source with team attribution.
 
-- Owner account registration, login, protected routes, and profile-aware navigation
-- Device submission flow with rule-based classification into current, recycle, rare, or unknown outcomes
-- Owner dashboard for submitted devices, request status, editable pending devices, and secure vault access
-- Staff workspace for collection requests, device inventory, unknown-device review, retrieval requests, wipe jobs, certificates, and referrals
-- Admin workspace for user role management, payment reports, referral reports, and system health checks
-- Retrieval/payment foundations with local checkout stubs and secure expiring download links
-- Referral/reward foundations for partner-based resale and reward tracking
-- Local launcher scripts that create the development database and seed demo accounts automatically
-- ngrok public demo launcher for sharing a temporary public URL
+[正式报告 / Final report](reports/COM6103_Team1_eWaste_Final_Report.pdf) · [来源与版本 / Provenance](docs/FINAL_SUBMISSION.md) · [运行说明 / Setup](SETUP_AND_DEPLOYMENT.md) · [验证记录 / Validation](docs/VALIDATION.md)
 
-## Tech Stack
+## Preserved versions / 保存版本
 
-| Layer | Technology |
+| Version | Meaning |
 |---|---|
-| Frontend | React, Vite, TypeScript, Tailwind CSS, React Router, Framer Motion |
-| Backend | Flask, SQLAlchemy, Flask-JWT-Extended, Flask-Migrate |
-| Database | SQLite for local development, configurable `DATABASE_URL` for other relational databases |
-| Testing | Python `unittest`, frontend TypeScript build, ESLint |
-| Local demo | Launcher scripts, seeded demo accounts, ngrok public tunnel |
+| Original March history | Original GitHub backend commits remain ancestors of `main`; the implementation was at `12909c9` on 3 March 2026. |
+| `archive/gitlab-report-dc62413f` | Archival tag containing all 216 files from the report-added GitLab snapshot, dated 7 May 2026, 01:15:33 UTC+8. |
+| `archive/gitlab-latest-d503d6b7` | Archival tag containing all 226 files from latest recovered GitLab `main`, dated 13 May 2026, 20:07:42 UTC+8. |
+| Current `main` | Latest recovered source, canonical Blackboard report, and updated archive documentation. |
 
-## Repository Structure
+Blackboard 的正式提交时间为 **2026 年 5 月 7 日 01:13（UTC+8）**，附件只有 PDF。报告相关 GitLab 快照比页面提交时间晚约两分钟，不能将其称为“提交瞬间的精确源码”。最新源码来自 5 月 13 日。
 
-```text
-.
-├─ frontend/                 # React/Vite application
-├─ backend/                  # Flask API, models, migrations, tests
-├─ DBupdate/                 # Database bridge helpers and schema notes
-├─ launcher/                 # Local and public-demo startup scripts
-├─ docs/                     # Meeting records and sprint documentation
-├─ SETUP_AND_DEPLOYMENT.md   # Detailed setup, ngrok, and deployment notes
-└─ demo_accounts.txt         # Seeded local demo credentials
-```
+The GitHub archival commits were created on the recovery date. The original **249-commit GitLab history has not been imported**; source ZIPs contain no `.git`. The tags identify archival imports, not original GitLab commit objects.
 
-## Prerequisites
+## Recovered prototype / 已恢复的原型
 
-Install these before running the project on a new machine:
+- **Owners:** email/password authentication, device submission and classification, request tracking, pending-device editing, retrieval and vault pages.
+- **Staff:** device records, unknown-device review, collection and retrieval requests, wipe-job records, referrals and reports.
+- **Administrators:** user and role management, payment/referral reports and system checks.
+- **Supporting source:** models and migrations, Google/GitHub integration code, notifications and email delivery, frontend routes/API clients, launchers, tests, meeting records and sprint documents.
 
-- Python 3.11 or newer
-- Node.js 20 or newer, including `npm`
-- Git
-- ngrok, only if you need a public demo link
+React 19、TypeScript、Vite 与 Tailwind CSS 构成前端；Flask、SQLAlchemy、JWT 和数据库迁移支持后端。本地默认使用 SQLite，可通过 `DATABASE_URL` 配置数据库地址。
 
-The launcher installs project-level Python and npm dependencies automatically, but it cannot install Python or Node.js for you.
+Payment checkout is explicitly a **demo sandbox**; cloud archives contain **synthetic demo files**. Wipe-job records do not establish physical device erasure. OAuth and SMTP require external configuration; Facebook/Instagram buttons are presentation flows. These integrations were not verified against live services.
 
-## Quick Start
+## Run locally / 本地运行
 
-### Windows
+Archive verification used **Python 3.12.14, Node.js 22.23.0 and npm 10.9.8**. From the repository root:
 
-Double-click:
-
-```bat
-launcher\run.bat
-```
-
-Or run it from PowerShell:
-
-```powershell
-.\launcher\run.bat
-```
-
-### macOS / Linux
-
-```sh
-sh launcher/run.sh
-```
-
-The local app opens at:
-
-- Frontend: `http://127.0.0.1:5173`
-- Backend API: `http://127.0.0.1:5050`
-
-On first launch, the script creates or updates:
-
-- `backend/.venv`
-- `frontend/node_modules`
-- `backend/instance/ewastehub_dev.sqlite3`
-- seeded demo accounts from `backend/seed_demo_accounts.py`
-
-## Demo Accounts
-
-The launcher automatically seeds demo users into the local SQLite database.
-
-Shared password:
-
-```text
-EwasteDemo!2026
-```
-
-Example accounts:
-
-| Role | Email |
-|---|---|
-| Owner | `user01@ewastehub.demo` |
-| Staff | `staff01@ewastehub.demo` |
-| Admin | `admin01@ewastehub.demo` |
-
-More demo accounts are listed in `demo_accounts.txt`.
-
-## Environment Variables
-
-Environment files are optional for normal local email/password usage.
-
-| File | Purpose |
-|---|---|
-| `backend/.env` | Backend secrets, OAuth secrets, database URL, CORS, payment credentials |
-| `frontend/.env` | Frontend API URL and optional OAuth client ID overrides |
-
-Use the examples as templates:
-
-```text
-backend/.env.example
-frontend/.env.example
-```
-
-Important notes:
-
-- Do not commit real `.env` files.
-- Local development can use the default SQLite database without setting `DATABASE_URL`.
-- Google login uses the public local-development client ID in the repository.
-- GitHub login requires `GITHUB_CLIENT_SECRET` in `backend/.env`.
-- Password reset emails require SMTP settings in `backend/.env`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and `MAIL_DEFAULT_SENDER`.
-- Facebook and Instagram login are available as demo sign-in flows for presentation.
-
-## OAuth Setup
-
-For local Google login, the OAuth client must allow:
-
-```text
-http://127.0.0.1:5173
-```
-
-If teammates use `localhost`, also add:
-
-```text
-http://localhost:5173
-```
-
-For GitHub OAuth, configure the callback URL:
-
-```text
-http://127.0.0.1:5050/api/auth/github/callback
-```
-
-## Public Demo with ngrok
-
-Public demo links use ngrok.
-
-Install ngrok on Windows:
-
-```powershell
-winget install Ngrok.Ngrok
-```
-
-Configure an auth token if ngrok requires it:
-
-```powershell
-ngrok config add-authtoken <your-token>
-```
-
-Start the public demo:
-
-```bat
-launcher\public_demo.bat
-```
-
-The launcher starts:
-
-- Backend: `http://127.0.0.1:5050`
-- Public-demo frontend: `http://127.0.0.1:5174`
-- ngrok tunnel: `https://*.ngrok...`
-
-Keep the launcher window open while sharing the generated URL.
-
-Recommended login methods through the public link:
-
-- Email/password registration
-- Seeded demo accounts
-- Facebook/Instagram demo sign-in
-
-Google/GitHub OAuth may require provider console URLs to be updated for the current ngrok domain.
-
-## Manual Development Commands
-
-The launcher is recommended, but the project can also be run manually.
-
-Backend:
-
-```powershell
+```bash
+python3 -m venv backend/.venv
+source backend/.venv/bin/activate
+python -m pip install -r launcher/requirements.txt
 cd backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r ..\launcher\requirements.txt
-.\.venv\Scripts\python.exe -m flask --app wsgi run --host 127.0.0.1 --port 5050
+python -m flask --app wsgi run --host 127.0.0.1 --port 5050
 ```
 
-Frontend:
+In another terminal:
 
-```powershell
+```bash
 cd frontend
-npm install
+npm ci --ignore-scripts
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-## Testing
+Open `http://127.0.0.1:5173`. Application startup creates the default local SQLite schema. Register an owner account, or follow [setup](SETUP_AND_DEPLOYMENT.md) to seed staff/admin demo accounts. That guide also includes Windows commands and configuration.
 
-Backend tests:
+## Verification / 整理时验证
 
-```powershell
-.\backend\.venv\Scripts\python.exe -m unittest discover -s backend/tests -v
-```
+On **9 September 2026**, the latest source passed **102 backend unittest tests**, the TypeScript/Vite build and ESLint. Backend tests used an isolated copy, temporary SQLite databases and blocked external connections. The build reported a large JavaScript chunk warning. Browser end-to-end journeys and live services were not tested.
 
-Frontend lint:
+正式报告记载的是当时 **95 项测试**；本次 102 项是对 5 月 13 日源码重新运行的结果。两者时间与版本不同，详见 [验证记录](docs/VALIDATION.md)。
 
-```powershell
-cd frontend
-npm run lint
-```
+## Team / 团队
 
-Frontend build:
+Roles follow the official report. This is shared team work, not a claim of sole authorship.
 
-```powershell
-cd frontend
-npm run build
-```
+| Member | Reported contribution |
+|---|---|
+| Dibing Bai | Documentation, report and part of the backend |
+| Ziwen Li | Database design, setup and implementation |
+| Yongjiang Liu | Frontend development |
+| Yaqun Ma | Frontend development and UI design |
+| Xuhao Zhou | Backend, APIs and integration |
 
-Current expected backend result: 95 tests pass.
+Blackboard confirms **Yongjiang Liu** as a member of `1 eWaste`. The original PDF spells this frontend member **Yongqiang Liu** on its cover and in §6.1. The PDF remains unchanged; the spelling discrepancy is recorded here.
 
-## Deployment Notes
+## Repository guide
 
-The development launcher is intended for local demos, not production hosting.
+| Path | Contents |
+|---|---|
+| `frontend/` | React pages, components, API clients and npm lockfile |
+| `backend/ewastehub/`, `backend/tests/` | Current Flask application and recovered unittest suite |
+| `DBupdate/`, `project_database.py` | Database bridge, schema helpers and shared database configuration |
+| `launcher/` | Original local/demo scripts and Python dependency list |
+| `reports/` | Canonical Blackboard report and submission receipt |
+| `docs/provenance/`, `docs/validation/` | Snapshot hashes, differences and validation evidence |
+| `docs/history/` | Historical March API reference |
+| `docs/meeting record/`, `docs/class record/`, `docs/sprint/` | Original team process documents |
 
-For production or a hosted staging deployment, configure:
+Original `backend/ewastehub_backup/`, `E_waste_project.pdf` and the course brief are retained as received. [The historical API guide](docs/history/MARCH_BACKEND_API.md) describes the March backend only; current routes are in `backend/ewastehub/modules/` and `routes.py`.
 
-- `APP_ENV=production`
-- strong `SECRET_KEY` and `JWT_SECRET_KEY`
-- production `DATABASE_URL`, preferably PostgreSQL
-- `FRONTEND_URL` set to the deployed frontend origin
-- `CORS_ALLOWED_ORIGINS` set to approved frontend origins
-- Google/GitHub OAuth credentials and callback URLs for the deployed domain
-- Stripe/PayPal credentials if real checkout is required
-- HTTPS, logging, backups, and a migration strategy
-
-See `SETUP_AND_DEPLOYMENT.md` for the complete setup and deployment checklist.
-
-## Project Status
-
-The project implements the main eWaste Hub workflow and supporting staff/admin foundations. Some external integrations, such as production cloud storage, production email delivery, fully verified payment provider callbacks, and a polished QR resale journey, are intended as future production improvements.
-
+This repository remains private because it includes shared team and course materials. No new redistribution license is asserted.

@@ -1,3 +1,5 @@
+> Historical reference for the March 2026 backend at `12909c9cdaa93a7eaf70041547113e5b412b1d7a`. These examples are not a current API contract for the recovered May full-stack source. See [current overview](../../README.md).
+
 # API reference
 
 Base URL for local development: `http://127.0.0.1:5050`.
