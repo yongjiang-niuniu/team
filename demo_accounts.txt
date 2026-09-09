@@ -1,0 +1,41 @@
+eWaste Hub demo accounts
+Generated for local/demo testing.
+
+Shared password for every account:
+EwasteDemo!2026
+
+User accounts
+1. user01@ewastehub.demo / EwasteDemo!2026
+2. user02@ewastehub.demo / EwasteDemo!2026
+3. user03@ewastehub.demo / EwasteDemo!2026
+4. user04@ewastehub.demo / EwasteDemo!2026
+5. user05@ewastehub.demo / EwasteDemo!2026
+6. user06@ewastehub.demo / EwasteDemo!2026
+7. user07@ewastehub.demo / EwasteDemo!2026
+8. user08@ewastehub.demo / EwasteDemo!2026
+9. user09@ewastehub.demo / EwasteDemo!2026
+10. user10@ewastehub.demo / EwasteDemo!2026
+
+Staff accounts
+1. staff01@ewastehub.demo / EwasteDemo!2026
+2. staff02@ewastehub.demo / EwasteDemo!2026
+3. staff03@ewastehub.demo / EwasteDemo!2026
+4. staff04@ewastehub.demo / EwasteDemo!2026
+5. staff05@ewastehub.demo / EwasteDemo!2026
+6. staff06@ewastehub.demo / EwasteDemo!2026
+7. staff07@ewastehub.demo / EwasteDemo!2026
+8. staff08@ewastehub.demo / EwasteDemo!2026
+9. staff09@ewastehub.demo / EwasteDemo!2026
+10. staff10@ewastehub.demo / EwasteDemo!2026
+
+Admin accounts
+1. admin01@ewastehub.demo / EwasteDemo!2026
+2. admin02@ewastehub.demo / EwasteDemo!2026
+3. admin03@ewastehub.demo / EwasteDemo!2026
+4. admin04@ewastehub.demo / EwasteDemo!2026
+5. admin05@ewastehub.demo / EwasteDemo!2026
+6. admin06@ewastehub.demo / EwasteDemo!2026
+7. admin07@ewastehub.demo / EwasteDemo!2026
+8. admin08@ewastehub.demo / EwasteDemo!2026
+9. admin09@ewastehub.demo / EwasteDemo!2026
+10. admin10@ewastehub.demo / EwasteDemo!2026

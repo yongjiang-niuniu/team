@@ -24,6 +24,8 @@ ENV/
 ########################################
 # Flask / Local runtime files
 ########################################
+# Do not commit generated SQLite runtime data. Shared database structure and
+# reproducible demo data must live in migrations / seed scripts instead.
 instance/
 *.sqlite3
 *.db
@@ -76,3 +78,4 @@ backend/*.sqlite3
 backend/*.db
 backend/.env
 backend/.env.*
+!backend/.env.example

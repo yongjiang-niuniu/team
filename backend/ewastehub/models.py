@@ -7,12 +7,21 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    auth_provider = db.Column(db.String(20), nullable=False, default="local", server_default="local")
+    google_sub = db.Column(db.String(255), unique=True, nullable=True)
+    full_name = db.Column(db.String(255), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
 
     # consumer / staff / admin
     role = db.Column(db.String(20), nullable=False, default="consumer")
 
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    password_reset_tokens = db.relationship(
+        "PasswordResetToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def to_public_dict(self):
         return {
@@ -21,6 +30,32 @@ class User(db.Model):
             "role": self.role,
             "created_at": self.created_at.isoformat(),
         }
+
+
+class PasswordResetToken(db.Model):
+    __tablename__ = "password_reset_tokens"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    token = db.Column(db.String(255), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, nullable=False, default=False)
+
+    user = db.relationship("User", back_populates="password_reset_tokens")
+
+    @property
+    def is_expired(self) -> bool:
+        return datetime.utcnow() >= self.expires_at
+
+    @property
+    def is_active(self) -> bool:
+        return not self.used and not self.is_expired
 
 class CollectionRequest(db.Model):
     __tablename__ = "collection_requests"
@@ -48,4 +83,49 @@ class CollectionRequest(db.Model):
             "condition": self.condition,
             "preferred_method": self.preferred_method,
             "status": self.status,
+        }
+
+class Device(db.Model):
+    __tablename__ = "devices"
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    owner = db.relationship("User", backref="devices")
+
+    # user input
+    name = db.Column(db.String(120), nullable=False)           # e.g. iPhone X
+    device_type = db.Column(db.String(50), nullable=False)     # phone/laptop/tablet/console/other
+    condition = db.Column(db.String(50), nullable=False)       # working/broken/unknown
+    age_years = db.Column(db.Integer, nullable=True)           # optional
+    demand = db.Column(db.String(20), nullable=True)           # high/medium/low/unknown (optional)
+
+    # system/staff fields
+    classification = db.Column(db.String(20), nullable=False, default="unknown")
+    workflow_status = db.Column(db.String(20), nullable=False, default="pending")
+    is_visible = db.Column(db.Boolean, nullable=False, default=True, server_default=db.text("1"))
+    is_draft = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text("0"))
+    owner_contacted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text("0"))
+    owner_contacted_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat(),
+            "owner_id": self.owner_id,
+            "name": self.name,
+            "device_type": self.device_type,
+            "condition": self.condition,
+            "age_years": self.age_years,
+            "demand": self.demand,
+            "classification": self.classification,
+            "workflow_status": self.workflow_status,
+            "processing_status": self.workflow_status,
+            "is_visible": self.is_visible,
+            "is_draft": self.is_draft,
+            "owner_contacted": self.owner_contacted,
+            "owner_contacted_at": self.owner_contacted_at.isoformat() if self.owner_contacted_at else None,
+            "notes": self.notes,
         }

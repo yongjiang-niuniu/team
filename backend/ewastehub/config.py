@@ -1,7 +1,30 @@
 import os
 
+from .oauth_public_defaults import PUBLIC_GITHUB_OAUTH_CLIENT_ID, PUBLIC_GOOGLE_OAUTH_CLIENT_ID
+from project_database import resolve_database_url
+
+
+def _env_or_public(key: str, public_default: str) -> str:
+    value = os.getenv(key, "").strip()
+    return value if value else public_default
+
+
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///ewastehub_dev.sqlite3")
+    APP_ENV = os.getenv("APP_ENV", os.getenv("FLASK_ENV", "development")).strip().lower() or "development"
+    SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "").strip()
+    GOOGLE_CLIENT_ID = _env_or_public("GOOGLE_CLIENT_ID", PUBLIC_GOOGLE_OAUTH_CLIENT_ID)
+    GITHUB_CLIENT_ID = _env_or_public("GITHUB_CLIENT_ID", PUBLIC_GITHUB_OAUTH_CLIENT_ID)
+    GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "").strip()
+    GITHUB_REDIRECT_URI = os.getenv(
+        "GITHUB_REDIRECT_URI",
+        "http://127.0.0.1:5050/api/auth/github/callback",
+    ).strip()
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
+    CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+    STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "").strip()
+    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "").strip()
+    PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "").strip()
+    PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET", "").strip()
+    SQLALCHEMY_DATABASE_URI = resolve_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False

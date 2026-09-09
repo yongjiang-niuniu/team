@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from .extensions import db
-from .models import CollectionRequest, User
-from .permissions import require_roles
+from ..extensions import db
+from ..models import CollectionRequest, User
+from ..permissions import require_roles
 
 requests_bp = Blueprint("requests", __name__, url_prefix="/api/requests")
 
@@ -74,7 +74,6 @@ def get_request(req_id: int):
     if not cr:
         return jsonify({"error": "not found"}), 404
 
-    # 本人可看；staff/admin 也可看
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "user not found"}), 404

@@ -1,0 +1,3 @@
+Database Runtime Risk Summary
+
+The system mainly relies on the PostgreSQL connection in DBupdate for all database operations, and the main flow (register, login, create device, submit request) should run normally. The most likely issues are: first, if the server database tables are not created in advance (i.e., init_db() not executed), it will fail immediately; second, the project contains both old local database models (Flask-SQLAlchemy) and the new connection, and inconsistent environment configuration may cause a mismatch where APIs use the new database while the app initializes the old one, leading to missing or inconsistent data.

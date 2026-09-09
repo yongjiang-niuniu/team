@@ -1,0 +1,1097 @@
+{
+  "project": "COM6103 eWaste Team01",
+  "gitlab_project_id": 12500,
+  "source_repository_url": "https://git.shefcompsci.org.uk/com6103-2025-26/team01/project.git",
+  "snapshot_commit": "dc62413f5a9b04827b15a0be506c3301d00129e7",
+  "commit_time_from_ui": "2026-05-07T01:15:33+08:00",
+  "parent_commit_from_ui": "eb4bc8659e7cceebe2c79a7660b0678ef1a390c4",
+  "commit_change_from_ui": "Only one added PDF file; source code unchanged by this report addition.",
+  "archive_sha256": "a3df5612b3e981c16440422e51866b209472fb44eab704ad314337baefe96f8e",
+  "archive_bytes": 7033315,
+  "history_scope": "One source-tree ZIP snapshot. Does not include .git or the 249-commit GitLab history.",
+  "submission_timing_note": "This report-addition commit is after the Blackboard submitted time displayed as 2026-05-07 01:13 UTC+8; do not claim that this exact Git commit was submitted to Blackboard.",
+  "source_files": [
+    {
+      "path": ".gitignore",
+      "bytes": 1624,
+      "sha256": "b55ac979855e1b8780fcff721541a1ac1650122b4390f61be5dce2bd9f4cc07e"
+    },
+    {
+      "path": "DBupdate/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "DBupdate/Database_table_design.md",
+      "bytes": 1851,
+      "sha256": "6269b6bb4ea10c84cf693ed19af7a3f795020952cf839f309f219463f6b8997b"
+    },
+    {
+      "path": "DBupdate/Database_usage_method.md",
+      "bytes": 1932,
+      "sha256": "0af51ec70a3a32018aa6d20d407779a216647ae235e6c3b9d86da2b16fdab596"
+    },
+    {
+      "path": "DBupdate/db_bridge.py",
+      "bytes": 116842,
+      "sha256": "c519b7bb39de9094a626a23dedb098a5cad48c5188f2ebb0163f8542a7b877f4"
+    },
+    {
+      "path": "DBupdate/db_new_test.py",
+      "bytes": 25482,
+      "sha256": "a5bcd6a52ce7398683aa3d1451e50fde8ecb9cdbd8560842895dc3e240625fc7"
+    },
+    {
+      "path": "DBupdate/problemsofdb.md",
+      "bytes": 644,
+      "sha256": "ba35d4e810fa4b82bc41d437ec26aabb603fe52ddd6f60ce03d1359ef9f44a81"
+    },
+    {
+      "path": "E_waste_project.pdf",
+      "bytes": 6588326,
+      "sha256": "a926aa40b2be2c5714091c17b20e126dc771cdf2108b05732bb57c60cee0cfc9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6909,
+      "sha256": "719c92bac726933dae51fb54f7b652b7892b1d366607f90c89069e004cc6a11c"
+    },
+    {
+      "path": "SETUP_AND_DEPLOYMENT.md",
+      "bytes": 4330,
+      "sha256": "f13291772638c9226f52ab024ee6e0e0d8b1ed49fde13fb43bf308681b310d7e"
+    },
+    {
+      "path": "backend/.env.example",
+      "bytes": 803,
+      "sha256": "264b1219500ef4bb14bd587d2fd51bb90a01c1cc9af09bb63b5c78ea0cb08280"
+    },
+    {
+      "path": "backend/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/ewastehub/__init__.py",
+      "bytes": 6223,
+      "sha256": "3baa9841aa33aae18ed6fe9507d1700dbff1038320d27ab8865be305bb026311"
+    },
+    {
+      "path": "backend/ewastehub/config.py",
+      "bytes": 1463,
+      "sha256": "742050114ae1c2337ec544f43b817da04a390a6ab78fe3796b28ad200e1aeaf5"
+    },
+    {
+      "path": "backend/ewastehub/extensions.py",
+      "bytes": 215,
+      "sha256": "6b0353fe27a2fe82e8281c47211c804154fbce921a3b56a0ae8d362383814844"
+    },
+    {
+      "path": "backend/ewastehub/models.py",
+      "bytes": 5305,
+      "sha256": "addbf82b86d8bb9d942c6d2bce1a5147e8531ef3c8f659f19b9ae87035c9b904"
+    },
+    {
+      "path": "backend/ewastehub/modules/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/ewastehub/modules/auth.py",
+      "bytes": 17252,
+      "sha256": "f851d6a2346435c0df01148143d22400a90f9135faf09d0178d96652a9ad5d2a"
+    },
+    {
+      "path": "backend/ewastehub/modules/devices.py",
+      "bytes": 32226,
+      "sha256": "6add38b00b9b5938c147032cb249336a55e959f02cc63cef90faefd4f5ab4a9a"
+    },
+    {
+      "path": "backend/ewastehub/modules/reports.py",
+      "bytes": 4193,
+      "sha256": "68c2a23e5b2ba9862138b18f35dd85aa392346b9ab6075e97a257cc656876ff4"
+    },
+    {
+      "path": "backend/ewastehub/modules/requests.py",
+      "bytes": 9211,
+      "sha256": "525554ea83b3d33532f307e02b9054f3f5d41d0f617011b62764a7d798037dae"
+    },
+    {
+      "path": "backend/ewastehub/modules/rewards.py",
+      "bytes": 12822,
+      "sha256": "e87d982b18d1f7bf8d41a2f0801c22eb49404990dc8bd848a13c56e7d82ec20d"
+    },
+    {
+      "path": "backend/ewastehub/modules/vault.py",
+      "bytes": 18476,
+      "sha256": "37ecc722d58518a640fc260a0ff648d0db1d21a6516baab9ffeb36144543ed1b"
+    },
+    {
+      "path": "backend/ewastehub/oauth_public_defaults.py",
+      "bytes": 291,
+      "sha256": "ad04182a56cb83973ae6b384c22394a447ff71c73b5c3d661481253891942a97"
+    },
+    {
+      "path": "backend/ewastehub/permissions.py",
+      "bytes": 657,
+      "sha256": "8ae52315129a6fb6f7305d659f44ec5f46fbe5bc052b9d9576d523b9d19a92d4"
+    },
+    {
+      "path": "backend/ewastehub/routes.py",
+      "bytes": 3923,
+      "sha256": "7144485079ab91b25e66f8f67ae61dfa0cbf916f1574bfc714fdbd7e237c6071"
+    },
+    {
+      "path": "backend/ewastehub_backup/__init__.py",
+      "bytes": 1781,
+      "sha256": "81e832be3b437f3c72be683d57054fa5368eb3a3ade19bb1f48a3db314167bfa"
+    },
+    {
+      "path": "backend/ewastehub_backup/config.py",
+      "bytes": 345,
+      "sha256": "5da6fd6344e5ec1e390f39fdb486ad3e1243c289eae0ccfb3195d0fb6e42752c"
+    },
+    {
+      "path": "backend/ewastehub_backup/extensions.py",
+      "bytes": 215,
+      "sha256": "6b0353fe27a2fe82e8281c47211c804154fbce921a3b56a0ae8d362383814844"
+    },
+    {
+      "path": "backend/ewastehub_backup/models.py",
+      "bytes": 3406,
+      "sha256": "8532d77b9dd1b94f88026d10495f6847afa9f7055bb91862f45618240acff4a0"
+    },
+    {
+      "path": "backend/ewastehub_backup/modules/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/ewastehub_backup/modules/auth.py",
+      "bytes": 3962,
+      "sha256": "f7095c1fa2a55b9ce0bbe0fccab3267afa4ffe8e882cdfa7915842e1bffdceb5"
+    },
+    {
+      "path": "backend/ewastehub_backup/modules/devices.py",
+      "bytes": 9818,
+      "sha256": "8bc8ff93b0aa73909b8c2b6028c3205c38ae92df8ff6882e001ff9060c8d9f89"
+    },
+    {
+      "path": "backend/ewastehub_backup/modules/requests.py",
+      "bytes": 3267,
+      "sha256": "7bd26fc1626e49c3d8388fa5cda0a90658fec9ee0360732f5be64a8adb11220c"
+    },
+    {
+      "path": "backend/ewastehub_backup/permissions.py",
+      "bytes": 657,
+      "sha256": "8ae52315129a6fb6f7305d659f44ec5f46fbe5bc052b9d9576d523b9d19a92d4"
+    },
+    {
+      "path": "backend/ewastehub_backup/routes.py",
+      "bytes": 870,
+      "sha256": "7dc5b671bf8259ff2aeb12c8d0b92b07c2cdb09d6743631c08d229e201a9dc0a"
+    },
+    {
+      "path": "backend/migrations/README",
+      "bytes": 41,
+      "sha256": "24bd0dae33abb1c3dc2a0466421d51de196fd7fae8843a2dd13be999d336ec99"
+    },
+    {
+      "path": "backend/migrations/alembic.ini",
+      "bytes": 857,
+      "sha256": "4a36049892b3cfa2bc41fb995ad2c900959c08a39d45b7d486c565a60bfca1c9"
+    },
+    {
+      "path": "backend/migrations/env.py",
+      "bytes": 3344,
+      "sha256": "89b2b586c74eb0e0735cd536c90a002336bb7ff105cda5525b038dfcd4a93734"
+    },
+    {
+      "path": "backend/migrations/script.py.mako",
+      "bytes": 494,
+      "sha256": "f3fc6003e826fce85e8673bb0a22228d68279b4d1996ccc41ed207ac0605265d"
+    },
+    {
+      "path": "backend/migrations/versions/1a2b3c4d5e6f_add_password_reset_tokens_table.py",
+      "bytes": 1254,
+      "sha256": "13b73caee73dc0b03ba1c5a7b202ff887103487a88a17610eba3433336bfcea7"
+    },
+    {
+      "path": "backend/migrations/versions/2b3c4d5e6f7a_add_is_visible_to_devices.py",
+      "bytes": 653,
+      "sha256": "b6a3a2f132d110bb058006aa62df97d4632c0cf6f3b0b9c4a6c4480b3803124b"
+    },
+    {
+      "path": "backend/migrations/versions/3c4d5e6f7a8b_add_is_draft_to_devices.py",
+      "bytes": 648,
+      "sha256": "7c23de5a7fdca5e93e0be3a2b17af5a1bf15ec70efe107c3904c7bec81558a39"
+    },
+    {
+      "path": "backend/migrations/versions/4d5e6f7a8b9c_add_owner_contact_fields_to_devices.py",
+      "bytes": 816,
+      "sha256": "4ae29d37ed7e2ef81519ffeebc14ab660f8c55c536a885c44099444a2876a018"
+    },
+    {
+      "path": "backend/migrations/versions/5d637803de23_add_collection_requests.py",
+      "bytes": 1236,
+      "sha256": "43f6505115fcf48f81e7b82e913883682eba3c2ac219cdb2cb34b508b6e99553"
+    },
+    {
+      "path": "backend/migrations/versions/8c9d0e1f2a3b_add_auth_provider_and_google_sub_to_users.py",
+      "bytes": 942,
+      "sha256": "2ff11f33bebdac9815e26d1d85cd87452eaae8dc1de7a4d77c1c605c1f753f42"
+    },
+    {
+      "path": "backend/migrations/versions/9a6b3e8f2c1d_align_runtime_bridge_schema.py",
+      "bytes": 8404,
+      "sha256": "57add5a63337a85c31e024dac2478781574f1e7ed17502dbbf423d3450354956"
+    },
+    {
+      "path": "backend/migrations/versions/b1c2d3e4f5a6_add_retrieval_lifecycle_payment_fields.py",
+      "bytes": 4243,
+      "sha256": "30aaf87e6179ed06e36fddd61288ba2acf05ff1839e71219a7706a3e750b4a42"
+    },
+    {
+      "path": "backend/migrations/versions/c4d5e6f7a8b9_add_payment_transactions_ledger.py",
+      "bytes": 5211,
+      "sha256": "54e368a50690d4cf8b8dda2b9b4b4e5f03895776e2d02cc4e88a864d18224f7c"
+    },
+    {
+      "path": "backend/migrations/versions/d6e7f8a9b0c1_add_referral_partner_foundation.py",
+      "bytes": 12514,
+      "sha256": "bcc06aac94a6c3cbfa08ceb8b81fe71dfa7c7220bd3e25bc5b9a8f17a33e72f8"
+    },
+    {
+      "path": "backend/migrations/versions/dc3a4a8aca94_add_devices_table.py",
+      "bytes": 1374,
+      "sha256": "035a1e7ffd2867bd23c2f27aca1812525e1ab19e95f25a88c679a0bbe80b747f"
+    },
+    {
+      "path": "backend/migrations/versions/e7f8a9b0c1d2_add_wipe_jobs_reporting_foundation.py",
+      "bytes": 5210,
+      "sha256": "d90cb69d4b516cc58f0d5cc331279ee11396e2063c0c7d4113a8acae2e25e0e9"
+    },
+    {
+      "path": "backend/migrations/versions/e83808d8e3d3_create_users_table.py",
+      "bytes": 1194,
+      "sha256": "d41d7cdcdcc5ca7c8c4d6172314538ac85e9377aba7032199801d2cbffc15b3c"
+    },
+    {
+      "path": "backend/scripts/make_admin.py",
+      "bytes": 833,
+      "sha256": "180416f23e121784e5350748523b7ef07882bf2f674ddf261934d016ffe9ed8f"
+    },
+    {
+      "path": "backend/seed_demo_accounts.py",
+      "bytes": 1592,
+      "sha256": "a43ce8ab06476df48d51a8804f6c8a31de6830ef4900c91e3c4928cecff18c93"
+    },
+    {
+      "path": "backend/tests/__init__.py",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "backend/tests/test_auth_flows.py",
+      "bytes": 130911,
+      "sha256": "667a7cceda3706ca41bb3e03679c8ca8a78cd0a3b3b57ec5f773c5d1f4cb4884"
+    },
+    {
+      "path": "backend/tests/test_github_login.py",
+      "bytes": 6174,
+      "sha256": "4a541c754ff28230a8ea1f224bb27c7a7c57ed38ded120c42793cc0ea017b279"
+    },
+    {
+      "path": "backend/tests/test_google_login.py",
+      "bytes": 6595,
+      "sha256": "4052cfb38103359d83b3d87f4cd7be5b12813bc08c6e4b3c694015e903b2afd7"
+    },
+    {
+      "path": "backend/wsgi.py",
+      "bytes": 133,
+      "sha256": "3acd05061a1e2895bd36a92dc75af7e4d0d33c14585f2b8f501933274a152043"
+    },
+    {
+      "path": "demo_accounts.txt",
+      "bytes": 1471,
+      "sha256": "4ceaef5957836e871b76b25c3ec867e4065042ff5c3988644702722dc059c5d5"
+    },
+    {
+      "path": "docs/class record/Brief Meeting Record with TA week3 .docx",
+      "bytes": 15769,
+      "sha256": "ba67c239201bf50f32ed5ba9e1f4ffc1fc410ec96a854f65fbd2f29b31f5a0de"
+    },
+    {
+      "path": "docs/class record/Brief Meeting Record with TA week5.docx",
+      "bytes": 15985,
+      "sha256": "57ace52da7a8459f0732078010e1411ed770e154e0472e54ecb9b3a688f49c19"
+    },
+    {
+      "path": "docs/class record/Brief Meeting Record with TA week6.docx",
+      "bytes": 15390,
+      "sha256": "d139b190d731be3d82a0c08b1ffaa3fb051465724558a152c50abe4569274ef3"
+    },
+    {
+      "path": "docs/class record/Brief Meeting Record with TA week8.docx",
+      "bytes": 15504,
+      "sha256": "ff5770725f391086a80bb6555964cf5e203b3d60574831b20d3e068ed90a3d69"
+    },
+    {
+      "path": "docs/class record/Brief Meeting Record with TA week9.docx",
+      "bytes": 15349,
+      "sha256": "70264b4821a67d6fcd7af5591f268b4d88343df3e970235eb6df255e9cfb6473"
+    },
+    {
+      "path": "docs/class record/Client Meeting Record week2 .docx",
+      "bytes": 19480,
+      "sha256": "bb3ec7fc343af7e972b98f283a9fd101138faaae3c3c44f876681068be56ce59"
+    },
+    {
+      "path": "docs/class record/Client Meeting Record week4.docx",
+      "bytes": 18387,
+      "sha256": "a636d7bdf3411abdae2f8ea7d0de435be044140d47684632dba0886f52d6e62a"
+    },
+    {
+      "path": "docs/class record/Client Meeting Record week7.docx",
+      "bytes": 18584,
+      "sha256": "56e289311e14be2f71fc33a176500ae1b7bdbf17e81430a203d8319319cc92f3"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week2.docx",
+      "bytes": 34163,
+      "sha256": "70441c43b3666b44fc532a43df6bf3344cf9e4579a413f702bcdb86656f5a019"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week3.docx",
+      "bytes": 34103,
+      "sha256": "d92b86e6107c912e61d58ec60412f326d37642f00e1b81168448dee0ee6b0bb2"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week4.docx",
+      "bytes": 35082,
+      "sha256": "5fd811e17b822331afe969534fddd94fd464fc99d05d1997d7741cfd5c0e9c3c"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week5.docx",
+      "bytes": 35285,
+      "sha256": "e022f5ea5eba4e20692b5bf5894b17cf0193cf688c19c6b51edc34b820a9a54f"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week6.docx",
+      "bytes": 35310,
+      "sha256": "31cfb7342fc2f5d05874f9a3819c8591e78f605ba64fa31383e05465f26b7e28"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week7.docx",
+      "bytes": 34826,
+      "sha256": "1d1800712968d37cfd92db0353fe3bb877b106289aa74fbc7780dc0c771b839b"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week8.docx",
+      "bytes": 35602,
+      "sha256": "da89eae723ee888e10ea4a9e654b810bdc10be9fb1eb9cbfab649da795e5c0d7"
+    },
+    {
+      "path": "docs/meeting record/Team Meeting Week9.docx",
+      "bytes": 35250,
+      "sha256": "8b64ba21c834083a1b952c3e556eb74e2f6e3dcb62cc485d37b329ba34b56484"
+    },
+    {
+      "path": "docs/sprint/Sprint 1.docx",
+      "bytes": 16222,
+      "sha256": "d3135a958864697690348928d238a19ce21debf8b18a614919792415343d3f47"
+    },
+    {
+      "path": "docs/sprint/Sprint 2.docx",
+      "bytes": 17937,
+      "sha256": "53551d55e6f35babbd244f8905aa45f6ecebd7c6a1a1653301e4eaa4e9fa76de"
+    },
+    {
+      "path": "docs/sprint/Sprint 3.docx",
+      "bytes": 15366,
+      "sha256": "7248a6bde48f0b37da5ef02837b0cc2a6912721b2d6d82fe8ffda42bb3581282"
+    },
+    {
+      "path": "eWaste brief.pdf",
+      "bytes": 55316,
+      "sha256": "fd95a7ade478113fca7ac477acfe91aaad14baf8643ff063372fa9b4125c6770"
+    },
+    {
+      "path": "frontend/.env.example",
+      "bytes": 326,
+      "sha256": "dd199cd0a96c49bfd438a804685a459b076e9a19d38026a3d944dce090316074"
+    },
+    {
+      "path": "frontend/.gitignore",
+      "bytes": 297,
+      "sha256": "6a4a66c4e3be64236d117c4d673146cb54344ce22281571b77f58c2a25eaec9a"
+    },
+    {
+      "path": "frontend/README.md",
+      "bytes": 544,
+      "sha256": "7590490ccd279456a227233807dbea4a33c8e20f7d770284afeef85569b7d5c2"
+    },
+    {
+      "path": "frontend/eslint.config.js",
+      "bytes": 616,
+      "sha256": "4efe97b16d1200fac0eaf07aa00930a8668b1f96a0be1891ace8c1e712ff0ccb"
+    },
+    {
+      "path": "frontend/index.html",
+      "bytes": 445,
+      "sha256": "fedcd7a2b1463a4df1ff19130a4d70addf4f41b3381cac2dc873a2a6612676e2"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "bytes": 223659,
+      "sha256": "5d692f796ddfeeef7388928a9ad5d70531242e5be97eb6d920cb5a803143a10f"
+    },
+    {
+      "path": "frontend/package.json",
+      "bytes": 2522,
+      "sha256": "ba720be1e1f0a995fd1f7a188e8ac02d14bdee825e0647df5bc2b5ff3a448c5b"
+    },
+    {
+      "path": "frontend/public/ewaste-icon.svg",
+      "bytes": 1013,
+      "sha256": "ee8c232324358d44294beaa47e13918637a3f91cfcfd40b203ff6eca74585f3a"
+    },
+    {
+      "path": "frontend/src/api/axios.ts",
+      "bytes": 1170,
+      "sha256": "94c8d6e8cb366d1cbdf0cdebbbeaef24caecb289683bab8f5ea82d796b546dbe"
+    },
+    {
+      "path": "frontend/src/app/App.tsx",
+      "bytes": 166,
+      "sha256": "e929710881c1be89c74aaa1f5092d729940be2da0dda1f72004c2e63e93d0c61"
+    },
+    {
+      "path": "frontend/src/app/components/AuthToast.tsx",
+      "bytes": 2356,
+      "sha256": "c1e48209b36c14b57540239c907d1eff42b7bcbf3a7511e07d0c3c8fa92212ce"
+    },
+    {
+      "path": "frontend/src/app/components/DashboardLayout.tsx",
+      "bytes": 16339,
+      "sha256": "060b92eb1d7b8183325b55620c705cb22618be63ea79d419efcd87b46b63dcb5"
+    },
+    {
+      "path": "frontend/src/app/components/PaymentSummaryCard.tsx",
+      "bytes": 5307,
+      "sha256": "495f142686572ac68550e97ad83e1da75906f245db9494ca28a77745c15dfd51"
+    },
+    {
+      "path": "frontend/src/app/components/RequireAuth.tsx",
+      "bytes": 314,
+      "sha256": "6693ddb9a54bd55657156ceb632c858d8edc18de4196b83466e831e98c2491f8"
+    },
+    {
+      "path": "frontend/src/app/components/RequireRole.tsx",
+      "bytes": 1578,
+      "sha256": "c6aa9f01190fd6ed686f1b203c40075a12045921c79567d6649959a7dbea7f19"
+    },
+    {
+      "path": "frontend/src/app/components/backoffice/BackOfficePlaceholder.tsx",
+      "bytes": 999,
+      "sha256": "cd68839f2c363692d1f35f1fadcd9149b91c66e9978c43706d72fd3f3a2162a2"
+    },
+    {
+      "path": "frontend/src/app/components/backoffice/BackOfficeSelect.tsx",
+      "bytes": 637,
+      "sha256": "c4406599eb31ef2962c81e631307b5386471542c75ec2044e66f5f9adb2f99d3"
+    },
+    {
+      "path": "frontend/src/app/components/backoffice/BackOfficeTable.tsx",
+      "bytes": 833,
+      "sha256": "b10e6c01c0430ffbb6f4cdcd7c865762f49a0457ab9aedee5fe93176deda204a"
+    },
+    {
+      "path": "frontend/src/app/components/backoffice/StatusBadge.tsx",
+      "bytes": 776,
+      "sha256": "9fe2afe2d47c31af04b4ec4798099440c77b9f231617232b1a726481b388d989"
+    },
+    {
+      "path": "frontend/src/app/components/backoffice/statusTone.ts",
+      "bytes": 771,
+      "sha256": "30ef1dacb1448ccf7088ec7bcc29ef6fee3a5e53cc58587954a783d0c4f2a185"
+    },
+    {
+      "path": "frontend/src/app/components/figma/ImageWithFallback.tsx",
+      "bytes": 1153,
+      "sha256": "79caaf9d1736698c090823383f7b18a9496e9c1309a40f925c8aeb37e496bd8e"
+    },
+    {
+      "path": "frontend/src/app/components/ui/accordion.tsx",
+      "bytes": 2060,
+      "sha256": "0ff6fadd3560c21aa67911d817f89d206188fd07bd57244ba59a117bd4ff9cb4"
+    },
+    {
+      "path": "frontend/src/app/components/ui/alert-dialog.tsx",
+      "bytes": 3875,
+      "sha256": "e0d97767b52a616536f60c931457d21731fae99412843955be39b852cee46854"
+    },
+    {
+      "path": "frontend/src/app/components/ui/alert.tsx",
+      "bytes": 1621,
+      "sha256": "19835c5f03b78e8915b5e8900a0681ddfb83e3bcc0c9930e62f31c01e4dfb129"
+    },
+    {
+      "path": "frontend/src/app/components/ui/aspect-ratio.tsx",
+      "bytes": 284,
+      "sha256": "7706745e217bebbc2d7bdf6697e9c6d484061146ae771755c9b6f240762c7217"
+    },
+    {
+      "path": "frontend/src/app/components/ui/avatar.tsx",
+      "bytes": 1104,
+      "sha256": "d40b1cbabe71c094c6bcf089ac5702ec77623dbc75c770ca9f86530e03d6fea1"
+    },
+    {
+      "path": "frontend/src/app/components/ui/badge.tsx",
+      "bytes": 1621,
+      "sha256": "3d21fd45dff8b7f9bee42deb086d545f6efbfe48bf63b1ca1ece5911cca29486"
+    },
+    {
+      "path": "frontend/src/app/components/ui/breadcrumb.tsx",
+      "bytes": 2368,
+      "sha256": "c9fcf4df692c80c06ccc38c32f7045d1f389197c503edac32941cde64bada62e"
+    },
+    {
+      "path": "frontend/src/app/components/ui/button-variants.ts",
+      "bytes": 1574,
+      "sha256": "97fc1b47042c01c948c50f45790fd37f1f1329c5be94d0dee4084a746015402a"
+    },
+    {
+      "path": "frontend/src/app/components/ui/button.tsx",
+      "bytes": 618,
+      "sha256": "c52ccd69b07e1cb0e2ff35d1dd93394878f1efeff59eb586a73821d6b8ef1ac9"
+    },
+    {
+      "path": "frontend/src/app/components/ui/calendar.tsx",
+      "bytes": 2922,
+      "sha256": "141e0b30f1b9f0357db0e5e2459136d604d6f928c0f624721d17dc6b20b9106b"
+    },
+    {
+      "path": "frontend/src/app/components/ui/card.tsx",
+      "bytes": 1988,
+      "sha256": "afc99cfa090791e394e68766095a4a86f5f6140521546b32d4b298061d72473f"
+    },
+    {
+      "path": "frontend/src/app/components/ui/carousel.tsx",
+      "bytes": 5606,
+      "sha256": "5ffdde6336f0ee479c11255f3b951b230a1771f0080323f4dd0def03d677f50c"
+    },
+    {
+      "path": "frontend/src/app/components/ui/chart.tsx",
+      "bytes": 9852,
+      "sha256": "e3e14ac980ce857edda5414ceaf8d7e504b5be37a4d99c28ff67c4c2535f51ff"
+    },
+    {
+      "path": "frontend/src/app/components/ui/checkbox.tsx",
+      "bytes": 1244,
+      "sha256": "894eb30992723a15e3ae75c46a3bf8808a526f5b3bff2c61c78f4d3e8d521cb8"
+    },
+    {
+      "path": "frontend/src/app/components/ui/collapsible.tsx",
+      "bytes": 806,
+      "sha256": "b763764ebced561c04e2e6ada9dc53375bb90b9f4bcb91b0f3d5de7381aaf0cb"
+    },
+    {
+      "path": "frontend/src/app/components/ui/command.tsx",
+      "bytes": 4662,
+      "sha256": "17ae21889928aeb0c042911153b7f0715bf537b190da31f16fc5798b9439aa2f"
+    },
+    {
+      "path": "frontend/src/app/components/ui/context-menu.tsx",
+      "bytes": 8251,
+      "sha256": "e17a7028f18669ddd104e0f40fbb0110ebab0cfc89ad6910a43d2dc8539e7c22"
+    },
+    {
+      "path": "frontend/src/app/components/ui/dialog.tsx",
+      "bytes": 3828,
+      "sha256": "f4adc0065a7f795b5d99b8afe095a443d2d03b523cf5f958bc36ee7fbe0d3e45"
+    },
+    {
+      "path": "frontend/src/app/components/ui/drawer.tsx",
+      "bytes": 4085,
+      "sha256": "5a99d073185e0ef6d984436547dce1f99c333dde7c1d7f33a2155dce05216514"
+    },
+    {
+      "path": "frontend/src/app/components/ui/dropdown-menu.tsx",
+      "bytes": 8313,
+      "sha256": "798b5337dc147d88c65de01f7221e0bfa04272968a1fce6acc1ec0bef7d9ddb9"
+    },
+    {
+      "path": "frontend/src/app/components/ui/form.tsx",
+      "bytes": 3769,
+      "sha256": "dd1646e6c2e84c6c16dc51dd29165b6aa1dc1fb50c1d007f54f959fbbf8ad4e0"
+    },
+    {
+      "path": "frontend/src/app/components/ui/hover-card.tsx",
+      "bytes": 1537,
+      "sha256": "6ec1ef98aef3898ef3f8eb35e52c10add150d76cd041132d2520fe3016ecfe60"
+    },
+    {
+      "path": "frontend/src/app/components/ui/input-otp.tsx",
+      "bytes": 2282,
+      "sha256": "b15b03f71841b176baa6e0294a0790eea1ffe9264c55003fbbc9039d8457057b"
+    },
+    {
+      "path": "frontend/src/app/components/ui/input.tsx",
+      "bytes": 963,
+      "sha256": "cb82ffcd1a9accdf9b07edc8e976f43ad1c9cf91968ffd7639df5df14b7ad407"
+    },
+    {
+      "path": "frontend/src/app/components/ui/label.tsx",
+      "bytes": 614,
+      "sha256": "5ed157f039340cedaa59a888931db608667827170ae9538513a50ccf2ca65a9f"
+    },
+    {
+      "path": "frontend/src/app/components/ui/menubar.tsx",
+      "bytes": 8426,
+      "sha256": "1f0173397dac560a4748782bb595c956155a9360755667bee3d18c4a0f1179b1"
+    },
+    {
+      "path": "frontend/src/app/components/ui/navigation-menu.tsx",
+      "bytes": 6654,
+      "sha256": "917a3a68a2059e20b795d6f667a9bd91396ac00af026c5af580f4ab596ef6ef5"
+    },
+    {
+      "path": "frontend/src/app/components/ui/pagination.tsx",
+      "bytes": 2745,
+      "sha256": "fcae4819e06f87ab0ed0d606bb8c3e3c68247e23d95a0fd6441adf54527f75f2"
+    },
+    {
+      "path": "frontend/src/app/components/ui/popover.tsx",
+      "bytes": 1641,
+      "sha256": "f14e16bebcfb1b605f6336d52153e43b76456c419930faea216d0ce2e3b1d3b7"
+    },
+    {
+      "path": "frontend/src/app/components/ui/progress.tsx",
+      "bytes": 743,
+      "sha256": "956cf4b485bcf57684caac10df2aa2a72387d0736d8f4cd1315c49ebd2da4615"
+    },
+    {
+      "path": "frontend/src/app/components/ui/radio-group.tsx",
+      "bytes": 1471,
+      "sha256": "ecaeebb62d064893c23e7242b796ff5834e2b430676b3eecb1b3d4bc413283c8"
+    },
+    {
+      "path": "frontend/src/app/components/ui/resizable.tsx",
+      "bytes": 2036,
+      "sha256": "7930ed39d1095de95193bb72ef046b8198647e1114d9a437aa1cd04c0975c5a8"
+    },
+    {
+      "path": "frontend/src/app/components/ui/scroll-area.tsx",
+      "bytes": 1649,
+      "sha256": "5bd9bb1d6909467b431283e96d2a9c83003bca1aa043d149dcfed8e81de51986"
+    },
+    {
+      "path": "frontend/src/app/components/ui/select.tsx",
+      "bytes": 6275,
+      "sha256": "6aaf2111952394fbb8c64a505af02d08da28cc25726d61a991daebe400772480"
+    },
+    {
+      "path": "frontend/src/app/components/ui/separator.tsx",
+      "bytes": 707,
+      "sha256": "54cc34fc3ef7e445948c5bccf7307efbb2c8f9e63db0fc68dd3fa8ee54dc9812"
+    },
+    {
+      "path": "frontend/src/app/components/ui/sheet.tsx",
+      "bytes": 4105,
+      "sha256": "8e1e064f92e2463bc7b8bb227a7c4d68d7464837c02d48ff75a87585d864c54c"
+    },
+    {
+      "path": "frontend/src/app/components/ui/sidebar.tsx",
+      "bytes": 21689,
+      "sha256": "7e0373d7b15c567ac0ae79e5f0278b3d523569c43ba4f73f29838a6216da3127"
+    },
+    {
+      "path": "frontend/src/app/components/ui/skeleton.tsx",
+      "bytes": 275,
+      "sha256": "7fd5d7f3ea479c3c1ae7be79bdbaf84c87647333768f70d396cd84580535d485"
+    },
+    {
+      "path": "frontend/src/app/components/ui/slider.tsx",
+      "bytes": 2006,
+      "sha256": "19dd9d8b758f41fa61967d1a0540ea34ed989727258d23eef9a50cdebcab805b"
+    },
+    {
+      "path": "frontend/src/app/components/ui/sonner.tsx",
+      "bytes": 571,
+      "sha256": "c5853f16cc11cb69e0115bab13eeabe7be5dad16fafd77b35cdfe4dbc64f0256"
+    },
+    {
+      "path": "frontend/src/app/components/ui/switch.tsx",
+      "bytes": 1182,
+      "sha256": "d4c744131c6161300510909aafe2c2cb6d819f2c7a8c2aeb75d4317004c7eff7"
+    },
+    {
+      "path": "frontend/src/app/components/ui/table.tsx",
+      "bytes": 2460,
+      "sha256": "e4ec7d3be042efd0fa363a57dd0e649a7831b86f975d4ec5192ebbfdd66e0f95"
+    },
+    {
+      "path": "frontend/src/app/components/ui/tabs.tsx",
+      "bytes": 1945,
+      "sha256": "933b8f421bd84b21a22e3fd11cd62fbf4fd8b6fb7252f42ea706b9cd29255051"
+    },
+    {
+      "path": "frontend/src/app/components/ui/textarea.tsx",
+      "bytes": 767,
+      "sha256": "6c3127c28ba1dda0428ba286a9e291c52ad95bfc8acd10518b262b71e470f3e7"
+    },
+    {
+      "path": "frontend/src/app/components/ui/toggle-group.tsx",
+      "bytes": 1929,
+      "sha256": "9da40175113313de64a90bd287fbc7e574cdbef1cc29963ebf1ff1b4094b07ee"
+    },
+    {
+      "path": "frontend/src/app/components/ui/toggle-variants.ts",
+      "bytes": 1062,
+      "sha256": "8897a75a1337b4ff9a61a8863a5c21ca5798e3d699f16dcc968e31f3d9c9784c"
+    },
+    {
+      "path": "frontend/src/app/components/ui/toggle.tsx",
+      "bytes": 589,
+      "sha256": "25ffa60a508c32950f90fac66e82c1d7077bdd30fb8d63e7c0a962ff3df2ba74"
+    },
+    {
+      "path": "frontend/src/app/components/ui/tooltip.tsx",
+      "bytes": 1897,
+      "sha256": "2f3a8720fb4b75c6911450be73d0407e2a84bb5ea1ded28ccdbf955be62a0155"
+    },
+    {
+      "path": "frontend/src/app/components/ui/use-mobile.ts",
+      "bytes": 585,
+      "sha256": "738d8e4520edeca7caa2ca56a4923839e30be14a00fc32b5a770f5d5b451a63e"
+    },
+    {
+      "path": "frontend/src/app/components/ui/utils.ts",
+      "bytes": 169,
+      "sha256": "d1f1e0d62cb8d8d1e04c26e14de842d8a151f75812d81b046c65b5d1fe8e4b27"
+    },
+    {
+      "path": "frontend/src/app/layouts/BackOfficeLayout.tsx",
+      "bytes": 5343,
+      "sha256": "90400bab7811e4291a0b7270745d6481fdc304378af1d950c875b65862266b59"
+    },
+    {
+      "path": "frontend/src/app/layouts/DashboardLayout.tsx",
+      "bytes": 5370,
+      "sha256": "5a8601bb8ecc083890c48679da64a29bfd5310cf192bcf54098402705671387f"
+    },
+    {
+      "path": "frontend/src/app/lib/adminPortal.ts",
+      "bytes": 4366,
+      "sha256": "2088f3b597c7f535b0c6975c0018f395e16cb56da4bd93108e19114a4a87ea5d"
+    },
+    {
+      "path": "frontend/src/app/lib/auth.ts",
+      "bytes": 1979,
+      "sha256": "6fcd56dbe5e9a5ba9ae63a75f4f000e9caed0305414417f45f15f9e82f5f3772"
+    },
+    {
+      "path": "frontend/src/app/lib/httpErrors.ts",
+      "bytes": 673,
+      "sha256": "42222b56473c3963ee9824452cffefddbe4311deef9e6b9f7c9b278cf5009ec3"
+    },
+    {
+      "path": "frontend/src/app/lib/oauthClientIds.ts",
+      "bytes": 665,
+      "sha256": "77de5b053c0d7ca5287edca4ffb3589026e711db193b0b12d6c0be281bc4acfa"
+    },
+    {
+      "path": "frontend/src/app/lib/payment.ts",
+      "bytes": 3256,
+      "sha256": "3c84b8672151a80e16ea4b5b99216b6f953434f2c3de44645b9a174844f73b3e"
+    },
+    {
+      "path": "frontend/src/app/lib/retrieval.ts",
+      "bytes": 7150,
+      "sha256": "20d11af5f1bc4f58a56402cc91578af665a035b92e5694b77b110f1820b87c4b"
+    },
+    {
+      "path": "frontend/src/app/lib/staffPortal.ts",
+      "bytes": 4323,
+      "sha256": "0843257b1a2ce17e16677cb059c94986ae0a7f0d255fad0afb7a17752efd75dd"
+    },
+    {
+      "path": "frontend/src/app/lib/userPortal.ts",
+      "bytes": 21095,
+      "sha256": "cf6a3560cd45a1e1abd33cfd86e79c42e2f74f07302e2a583ed2d169b42a61c7"
+    },
+    {
+      "path": "frontend/src/app/pages/AuthPage.tsx",
+      "bytes": 60732,
+      "sha256": "63e27a3bc7043452fac0b7b7d9bef0c44ab879ba5e262b1a9b541aebd5f0c112"
+    },
+    {
+      "path": "frontend/src/app/pages/DashboardPage.tsx",
+      "bytes": 50209,
+      "sha256": "9d64e349da510b592f4e9adaa3cc0bd2858f5138805229fa3ba6013a23babf78"
+    },
+    {
+      "path": "frontend/src/app/pages/ForgotPasswordPage.tsx",
+      "bytes": 5853,
+      "sha256": "d0ac173bed093a4012f8a21a43eb007c3d8c17724a3be2f4da767467066d86fd"
+    },
+    {
+      "path": "frontend/src/app/pages/LandingPage.tsx",
+      "bytes": 22823,
+      "sha256": "b6e041949e2460072b0ef7666ff02a6da58b30bdec446f7c9f6b6a7e59331461"
+    },
+    {
+      "path": "frontend/src/app/pages/NewRequestPage.tsx",
+      "bytes": 25256,
+      "sha256": "8f50fd0b43f6590b3acdccdc3a385b7dea8097977fc4253ac059f9c4c54f7241"
+    },
+    {
+      "path": "frontend/src/app/pages/OAuthCallbackPage.tsx",
+      "bytes": 3269,
+      "sha256": "0cec3e9c4b9551f5af9a895e902fa2f03c22829ff49bc1b69addc9e1b8395031"
+    },
+    {
+      "path": "frontend/src/app/pages/PaymentCancelPage.tsx",
+      "bytes": 5499,
+      "sha256": "13de6832f12423bd3298db1d0c330e023625210d02c39565d46435d14d964191"
+    },
+    {
+      "path": "frontend/src/app/pages/PaymentSuccessPage.tsx",
+      "bytes": 5712,
+      "sha256": "246bd2d887e5fbeddc07d5ace056133106c6a6181a830dbe930556b86cee0582"
+    },
+    {
+      "path": "frontend/src/app/pages/ResetPasswordPage.tsx",
+      "bytes": 9241,
+      "sha256": "70fb218fbb9413265ceddb6ccd722fec840d86a7e5c6c7fdcf8024edc5fbf485"
+    },
+    {
+      "path": "frontend/src/app/pages/RewardsPage.tsx",
+      "bytes": 32335,
+      "sha256": "560f7ac9517b4db2fb219883416f7e079c895c9799ff03546808f223d4e43b08"
+    },
+    {
+      "path": "frontend/src/app/pages/SecurityVaultPage.tsx",
+      "bytes": 37209,
+      "sha256": "448b7ba01b4ab6e6f5869dea50c8a875099605d7747709b6d0aa8115af70cfa8"
+    },
+    {
+      "path": "frontend/src/app/pages/SettingsPage.tsx",
+      "bytes": 16138,
+      "sha256": "ba5cd8d0ac33e7319b9c21d0be140ff8efdda7e54bdedb15e37b86ec6dd33487"
+    },
+    {
+      "path": "frontend/src/app/pages/StaffPortalPage.tsx",
+      "bytes": 172214,
+      "sha256": "faeaa9b589cea99856fbe5988bef841dd3324898632b96d2efe270d533425e93"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminOverviewPage.tsx",
+      "bytes": 6448,
+      "sha256": "f8a4615f173b598b8837f56c3d571a2264adf5cfb725c515d35a6c833ad4bd20"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminPaymentsPage.tsx",
+      "bytes": 8614,
+      "sha256": "0b86de08b3c72cd18cca35bf79ca3c2f2aa83545c5b9b99f81a5c14b4ca9b85b"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminReferralsPage.tsx",
+      "bytes": 11217,
+      "sha256": "fe436aa541e610e2371284a6acac2218d46459c5c23e37f04269607e0b08226d"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminReportsPage.tsx",
+      "bytes": 8631,
+      "sha256": "400d5e1b32a5349d4179f2ce802f77c8104acff2beac30ee5b905712bb124dd9"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminSystemPage.tsx",
+      "bytes": 3926,
+      "sha256": "b51cdfc3963dc5b4f1cfc139cbc8a3528d47716cffdbbaba86da62f8ade4f0ca"
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminUsersPage.tsx",
+      "bytes": 11505,
+      "sha256": "febca9b0dd515ded0e3c4421af5c0ec9632c8f8fef39421a5d885e650ccbb1e8"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffDevicesPage.tsx",
+      "bytes": 14094,
+      "sha256": "77af71a30bbed0031afe5777a5d0d17f4e4cae3f55445cfa5b6a3373a8e316dc"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffOverviewPage.tsx",
+      "bytes": 6959,
+      "sha256": "1023e90df7b0f810a7be83ba0894dae6ed1e93d7ce813c498f45610fb6dea25a"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffReferralsPage.tsx",
+      "bytes": 11591,
+      "sha256": "b2a82e01129403df82a4e1cb30569cf3f7c334c1403d53afdc649240c5492ed2"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffRequestsPage.tsx",
+      "bytes": 17967,
+      "sha256": "c148d9a9597d2270f0844992218d03309de04fcc589748d94545a4e1c0be3db4"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffRetrievalPage.tsx",
+      "bytes": 8447,
+      "sha256": "a8f5d1c8642af61932001b4e1773a102edb6409d73090d77ceeabad902c1b632"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffUnknownQueuePage.tsx",
+      "bytes": 5045,
+      "sha256": "6af65db7f4f27c872218a757eb9e140d8cbf56a16f32b612872ee414f6dc64b0"
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffWipeJobsPage.tsx",
+      "bytes": 10965,
+      "sha256": "0a0746ffc74af203fdcb224bbf359722923cd31dcd3af00ad3d9ba4e7538330a"
+    },
+    {
+      "path": "frontend/src/app/routes.tsx",
+      "bytes": 5518,
+      "sha256": "72c305e4e52103aaf7e03249b0909c0aa3fb85cb4efd4f7596f1ca7a18f289ab"
+    },
+    {
+      "path": "frontend/src/config/api.ts",
+      "bytes": 284,
+      "sha256": "e8951a7fda2c5e1a4c05cb35c923c9676e34807f0f42e909a7de3713dbe09d9b"
+    },
+    {
+      "path": "frontend/src/config/oauthPublicDefaults.ts",
+      "bytes": 480,
+      "sha256": "bc61c85de788a22665ff38f82c3fe25d8f49355fc59e6e31e9662d684fa6928d"
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "bytes": 183,
+      "sha256": "31534914ad17a147a266479b0b43fa771e6b8b9e79c8d099333dbec3f73e547c"
+    },
+    {
+      "path": "frontend/src/styles/fonts.css",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "frontend/src/styles/index.css",
+      "bytes": 72,
+      "sha256": "9cf0c73c5a7251c9e1f087665c7936fb39a0ee7641cae20cd4b18955a32ed099"
+    },
+    {
+      "path": "frontend/src/styles/tailwind.css",
+      "bytes": 98,
+      "sha256": "c7dddb734b0c9e3cfaa6698cd725f018b8a5e41f847ae42fd9b0269d44ee9ff4"
+    },
+    {
+      "path": "frontend/src/styles/theme.css",
+      "bytes": 5499,
+      "sha256": "c4f89d95c3c0af586d113ca1974e5a788ba8562de67f656cbfca9d16779c9086"
+    },
+    {
+      "path": "frontend/src/types/env.d.ts",
+      "bytes": 210,
+      "sha256": "31fb0e724c9f56423c5da78ac53ef2589e374ed5f1de8844ef040530ca8a43b6"
+    },
+    {
+      "path": "frontend/src/types/google.d.ts",
+      "bytes": 949,
+      "sha256": "ea03437114b51cc0f3c91cf1eec126bf2aa314578019fedf714d3ce361c0d191"
+    },
+    {
+      "path": "frontend/tsconfig.app.json",
+      "bytes": 777,
+      "sha256": "cdcaa76050859f11ac899d1f55a680f2c9d6f8ec4294835f544811da1a75e6c9"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "bytes": 119,
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808"
+    },
+    {
+      "path": "frontend/tsconfig.node.json",
+      "bytes": 653,
+      "sha256": "c3dd0fb522feba3596713f51b95bd53d781d845d24aedbfa2ac093d8b39c5120"
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "bytes": 504,
+      "sha256": "40945ac60e3290610f4550b566e639884461ea89fc01952b15e7862e9147a2eb"
+    },
+    {
+      "path": "launcher/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "launcher/Version_Problem_Overview.md",
+      "bytes": 388,
+      "sha256": "a92d2b928175a2981a874faa6cd9f82c47fd1e647c852e1f86b9b14eb206ad00"
+    },
+    {
+      "path": "launcher/public_demo.bat",
+      "bytes": 514,
+      "sha256": "1df189382014d2f5f0093baf848e08fde26ad31d2785872b756f1ed3f0192219"
+    },
+    {
+      "path": "launcher/public_demo.ps1",
+      "bytes": 406,
+      "sha256": "f46b5fcf2942f580f0f4839f71cf44877ba6a4de51db814feda27ff831ea6eef"
+    },
+    {
+      "path": "launcher/requirements.txt",
+      "bytes": 118,
+      "sha256": "b72d6e263febb7f8f5cebd7318ae2a01f281ac11f3eff1d3e628b874a2d8c6a1"
+    },
+    {
+      "path": "launcher/run.bat",
+      "bytes": 463,
+      "sha256": "bc7248dffcc742d8b89433159a1c9e769b87042d044d904214e7485a70453421"
+    },
+    {
+      "path": "launcher/run.sh",
+      "bytes": 387,
+      "sha256": "6a0a96bfab3fd2a8162cd82368c3d88631fc1253c610521deb4183f353f88be7"
+    },
+    {
+      "path": "launcher/run.txt",
+      "bytes": 1476,
+      "sha256": "2d82499692abfc54438cb973d276ddcb9f977579c530f796d861ab54c463ed4d"
+    },
+    {
+      "path": "launcher/start_app.ps1",
+      "bytes": 390,
+      "sha256": "b7b3e7ff5b58325bc172f25d479d44c2f5448bd4b150f397e4dd736e1e6a7fc6"
+    },
+    {
+      "path": "launcher/start_app.py",
+      "bytes": 6310,
+      "sha256": "2c4993c658dc919237ce5b6447b8629ea504d01d08c31d69411abfcd91ba05df"
+    },
+    {
+      "path": "launcher/start_backend.bat",
+      "bytes": 558,
+      "sha256": "3ff349922bfff8e70e4ac336684e99bee8ccc7edc26810586e01150381311eff"
+    },
+    {
+      "path": "launcher/start_frontend.bat",
+      "bytes": 510,
+      "sha256": "5420cfb2a1c1848d045db096a61aa6d999b1847113b45adf5aa94b27269c5441"
+    },
+    {
+      "path": "launcher/start_public_demo.py",
+      "bytes": 7557,
+      "sha256": "20ae69e72c82932b031f5c3e2dd48dcb1b574264de10be3ae3215c859374d52f"
+    },
+    {
+      "path": "project_database.py",
+      "bytes": 761,
+      "sha256": "126ee6efe6694d8be957a4679d1607fd14ec3d0e55dda4d7c223ea7d39ca6983"
+    }
+  ],
+  "file_count": 216,
+  "archive_commit_scope": "All listed source files copied byte-for-byte at their original relative paths. Existing Blackboard reports and archive documentation retained in addition. The GitHub archival commit has a new current timestamp and is not the original GitLab commit."
+}

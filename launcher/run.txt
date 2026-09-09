@@ -1,0 +1,30 @@
+Temporary cross-platform launcher entrypoints:
+
+- Windows: run `launcher\run.bat`
+- macOS / Linux / UOS: run `launcher/run.sh`
+- Public demo link on Windows: run `launcher\public_demo.bat`
+
+Both wrappers call `launcher/start_app.py`, which:
+
+- creates or reuses `backend/.venv`
+- installs `launcher/requirements.txt`
+- installs frontend npm dependencies when `frontend/node_modules` is missing
+- starts the backend on `127.0.0.1:5050`
+- starts the frontend on `127.0.0.1:5173`
+- opens the browser after both services are reachable
+
+This launcher is a temporary development-phase solution. It requires Python 3.11+ and Node.js 20+ to already be installed on the machine.
+
+Public demo launcher:
+
+- starts the backend on `127.0.0.1:5050`
+- starts a separate public-demo frontend on `127.0.0.1:5174`
+- proxies frontend `/api` requests to the local backend
+- starts ngrok and prints a temporary `https://*.ngrok...` link
+- requires `ngrok` to be installed, for example: `winget install Ngrok.Ngrok`
+- if ngrok asks for an auth token, run: `ngrok config add-authtoken <your-token>`
+- keep the launcher window open while sharing the link
+
+Through the ngrok link, email/password accounts, seeded demo accounts, and Facebook/Instagram demo sign-in are the safest options. Google/GitHub OAuth may require the provider console to be updated for the current ngrok URL.
+
+See `SETUP_AND_DEPLOYMENT.md` in the project root for full fresh-clone, public-demo, and production-deployment notes.
