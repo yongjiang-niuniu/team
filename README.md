@@ -1,38 +1,52 @@
-# eWaste Hub · COM6103 Team 1
+# eWaste Hub
 
-谢菲尔德大学团队项目：帮助用户提交闲置电子设备，并让工作人员完成设备分类、审核、提取申请和回收处理。此私有仓库保存 **Blackboard 正式最终报告、团队 GitLab 的两个完整文件快照，以及原有 3 月后端提交历史**。
+A web application for managing unwanted electronic devices from owner submission through staff review, collection and retrieval. The project brings those steps into one interface, with separate workspaces for owners, staff and administrators.
 
-A full-stack electronic-waste management prototype built by COM6103 Team 1. Owners submit devices; staff process them; administrators manage users and reports. This archive retains the official final report and recovered React/Flask source with team attribution.
+中文概述：谢菲尔德大学 COM6103 团队项目，使用 React 和 Flask 实现电子设备登记、分类审核、回收申请和管理流程；保留正式报告、团队源码与验证记录。
 
-[正式报告 / Final report](reports/COM6103_Team1_eWaste_Final_Report.pdf) · [来源与版本 / Provenance](docs/FINAL_SUBMISSION.md) · [运行说明 / Setup](SETUP_AND_DEPLOYMENT.md) · [验证记录 / Validation](docs/VALIDATION.md)
+[Documentation](docs/README.md) · [Local setup](SETUP_AND_DEPLOYMENT.md) · [Final report](reports/COM6103_Team1_eWaste_Final_Report.pdf)
 
-## Preserved versions / 保存版本
+## Project at a glance
 
-| Version | Meaning |
-|---|---|
-| Original March history | Original GitHub backend commits remain ancestors of `main`; the implementation was at `12909c9` on 3 March 2026. |
-| `archive/gitlab-report-dc62413f` | Archival tag containing all 216 files from the report-added GitLab snapshot, dated 7 May 2026, 01:15:33 UTC+8. |
-| `archive/gitlab-latest-d503d6b7` | Archival tag containing all 226 files from latest recovered GitLab `main`, dated 13 May 2026, 20:07:42 UTC+8. |
-| Current `main` | Latest recovered source, canonical Blackboard report, and updated archive documentation. |
+| Item | Details |
+| --- | --- |
+| Course | COM6103 Team Software Project, University of Sheffield, Team 1 |
+| Project type | Full-stack coursework prototype |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS |
+| Backend | Flask, SQLAlchemy, JWT authentication, database migrations |
+| Local storage | SQLite by default; shared database configuration for Flask and the database bridge |
+| Current source | Recovered team `main` snapshot from 13 May 2026; maintained here with documentation and the official report |
+| Status | Backend tests and frontend build/lint verified; external production services and browser journeys remain unverified |
 
-Blackboard 的正式提交时间为 **2026 年 5 月 7 日 01:13（UTC+8）**，附件只有 PDF。报告相关 GitLab 快照比页面提交时间晚约两分钟，不能将其称为“提交瞬间的精确源码”。最新源码来自 5 月 13 日。
+## What it does
 
-The GitHub archival commits were created on the recovery date. The original **249-commit GitLab history has not been imported**; source ZIPs contain no `.git`. The tags identify archival imports, not original GitLab commit objects.
+| User | Main workflows |
+| --- | --- |
+| Device owner | Register or sign in, submit devices, view classification and requests, edit pending submissions, and access retrieval/vault pages |
+| Staff | Review devices and unknown classifications, process collection and retrieval requests, manage wipe-job records, and work with referrals and reports |
+| Administrator | Manage users and roles, inspect payment/referral reports, and run system checks |
 
-## Recovered prototype / 已恢复的原型
+The source also includes password-reset email delivery, notifications, Google/GitHub authentication integrations and a demonstration checkout flow. Their operational limits are listed below.
 
-- **Owners:** email/password authentication, device submission and classification, request tracking, pending-device editing, retrieval and vault pages.
-- **Staff:** device records, unknown-device review, collection and retrieval requests, wipe-job records, referrals and reports.
-- **Administrators:** user and role management, payment/referral reports and system checks.
-- **Supporting source:** models and migrations, Google/GitHub integration code, notifications and email delivery, frontend routes/API clients, launchers, tests, meeting records and sprint documents.
+## Repository guide
 
-React 19、TypeScript、Vite 与 Tailwind CSS 构成前端；Flask、SQLAlchemy、JWT 和数据库迁移支持后端。本地默认使用 SQLite，可通过 `DATABASE_URL` 配置数据库地址。
+| Path | Start here for |
+| --- | --- |
+| [frontend/](frontend/) | React pages, reusable UI components, API clients and the npm lockfile |
+| [backend/ewastehub/](backend/ewastehub/) | Flask application factory, authentication and workflow modules |
+| [backend/tests/](backend/tests/) | Recovered backend unittest suite |
+| [DBupdate/](DBupdate/), [project_database.py](project_database.py) | Database bridge, schema helpers and shared database URL resolution |
+| [launcher/](launcher/) | Python dependency list and original development launchers |
+| [docs/](docs/README.md) | Architecture, setup links, validation, team process records and version provenance |
+| [reports/](reports/) | Official Blackboard final report and submission receipt |
 
-Payment checkout is explicitly a **demo sandbox**; cloud archives contain **synthetic demo files**. Wipe-job records do not establish physical device erasure. OAuth and SMTP require external configuration; Facebook/Instagram buttons are presentation flows. These integrations were not verified against live services.
+The current application entry point is `backend/wsgi.py`. The older `backend/ewastehub_backup/` directory is preserved source material; [the March API reference](docs/history/MARCH_BACKEND_API.md) describes an earlier backend, not the current route set.
 
-## Run locally / 本地运行
+## Getting started
 
-Archive verification used **Python 3.12.14, Node.js 22.23.0 and npm 10.9.8**. From the repository root:
+The recorded validation environment used **Python 3.12.14, Node.js 22.23.0 and npm 10.9.8**. Python requirements are unpinned; the frontend includes a lockfile. Use a local development environment and start both services from the repository root.
+
+Backend, on macOS/Linux:
 
 ```bash
 python3 -m venv backend/.venv
@@ -42,7 +56,7 @@ cd backend
 python -m flask --app wsgi run --host 127.0.0.1 --port 5050
 ```
 
-In another terminal:
+Frontend, in a second terminal:
 
 ```bash
 cd frontend
@@ -50,41 +64,35 @@ npm ci --ignore-scripts
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Open `http://127.0.0.1:5173`. Application startup creates the default local SQLite schema. Register an owner account, or follow [setup](SETUP_AND_DEPLOYMENT.md) to seed staff/admin demo accounts. That guide also includes Windows commands and configuration.
+Open `http://127.0.0.1:5173` and register an owner account. Application startup creates the default local SQLite schema. Follow [the setup guide](SETUP_AND_DEPLOYMENT.md) for Windows commands, staff/admin demo accounts, environment settings and available checks.
 
-## Verification / 整理时验证
+## Design
 
-On **9 September 2026**, the latest source passed **102 backend unittest tests**, the TypeScript/Vite build and ESLint. Backend tests used an isolated copy, temporary SQLite databases and blocked external connections. The build reported a large JavaScript chunk warning. Browser end-to-end journeys and live services were not tested.
+The React client presents role-specific workflows and calls the Flask JSON API. The application factory registers separate modules for authentication, devices, requests, rewards, reports, notifications and retrieval/vault operations. JWT identity and role checks protect backend operations.
 
-正式报告记载的是当时 **95 项测试**；本次 102 项是对 5 月 13 日源码重新运行的结果。两者时间与版本不同，详见 [验证记录](docs/VALIDATION.md)。
+Device classification starts with explicit age/demand rules. Staff can review unknown devices and update classifications and processing states. Flask models and the `DBupdate` bridge coexist in the recovered implementation; both use `project_database.py` to resolve the database address. [Architecture notes](docs/ARCHITECTURE.md) map these responsibilities to source files.
 
-## Team / 团队
+## Results and verification
 
-Roles follow the official report. This is shared team work, not a claim of sole authorship.
+| Evidence | Scope and result |
+| --- | --- |
+| Official final report | Records 95 tests for an earlier development state; this is historical report evidence |
+| 9 September 2026 validation | Latest 13 May source passed 102 backend tests, with temporary SQLite databases and blocked external connections |
+| Frontend checks | TypeScript/Vite build and ESLint passed; the build reported a large JavaScript chunk warning |
+| Documentation refresh | Source paths, navigation, commands and claims reviewed against the preserved code and existing validation records; application tests were not rerun for documentation edits |
 
-| Member | Reported contribution |
-|---|---|
-| Dibing Bai | Documentation, report and part of the backend |
-| Ziwen Li | Database design, setup and implementation |
-| Yongjiang Liu | Frontend development |
-| Yaqun Ma | Frontend development and UI design |
-| Xuhao Zhou | Backend, APIs and integration |
+The historical report and later validation concern different versions. [Validation details](docs/VALIDATION.md) include the environment, commands, raw outputs and exclusions. Frontend build/lint results do not establish successful browser end-to-end journeys.
 
-Blackboard confirms **Yongjiang Liu** as a member of `1 eWaste`. The original PDF spells this frontend member **Yongqiang Liu** on its cover and in §6.1. The PDF remains unchanged; the spelling discrepancy is recorded here.
+## Limitations
 
-## Repository guide
+- Checkout is a **demo sandbox**, and generated cloud archives contain synthetic demonstration files. The code does not establish live payment or cloud-delivery operation.
+- Wipe-job records and certificates do not establish physical device erasure.
+- Google/GitHub authentication and SMTP require external configuration. Live provider flows were not tested; Facebook/Instagram buttons are presentation flows.
+- The recorded Python environment was installed later from unpinned requirements. Original launchers and public-tunnel scripts were inspected but not executed during validation.
+- This remains a coursework prototype with no verified production deployment or complete browser test coverage.
 
-| Path | Contents |
-|---|---|
-| `frontend/` | React pages, components, API clients and npm lockfile |
-| `backend/ewastehub/`, `backend/tests/` | Current Flask application and recovered unittest suite |
-| `DBupdate/`, `project_database.py` | Database bridge, schema helpers and shared database configuration |
-| `launcher/` | Original local/demo scripts and Python dependency list |
-| `reports/` | Canonical Blackboard report and submission receipt |
-| `docs/provenance/`, `docs/validation/` | Snapshot hashes, differences and validation evidence |
-| `docs/history/` | Historical March API reference |
-| `docs/meeting record/`, `docs/class record/`, `docs/sprint/` | Original team process documents |
+## Attribution and provenance
 
-Original `backend/ewastehub_backup/`, `E_waste_project.pdf` and the course brief are retained as received. [The historical API guide](docs/history/MARCH_BACKEND_API.md) describes the March backend only; current routes are in `backend/ewastehub/modules/` and `routes.py`.
+Built by **COM6103 Team 1**: Dibing Bai, Ziwen Li, Yongjiang Liu, Yaqun Ma and Xuhao Zhou. The report attributes frontend development to Yongjiang Liu; this repository preserves shared team work and does not claim sole authorship.
 
-This repository remains private because it includes shared team and course materials. No new redistribution license is asserted.
+The official Blackboard report, two GitLab source snapshots and original March GitHub history are retained. The original **249-commit GitLab history was not imported**. Snapshot dates, original hashes, archival tags, report copies and a name-spelling discrepancy are documented in [Final submission and provenance](docs/FINAL_SUBMISSION.md). Shared team and course materials remain private; no new redistribution license is asserted.
