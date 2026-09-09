@@ -1,0 +1,31 @@
+{
+  "prepared_on": "2026-09-09",
+  "status": "official_submission_preserved",
+  "canonical_report": "reports/COM6103_Team1_eWaste_Final_Report.pdf",
+  "bytes": 6588326,
+  "sha256": "1cded5fef40262c3e30cb883781ca83a682f3e64c261ccac4e75fd23e37cdc37",
+  "preservation": "byte-identical to official Blackboard attachment",
+  "source": {
+    "platform": "University of Sheffield Blackboard",
+    "course": "COM6103",
+    "course_id": "_123515_1",
+    "assessment": "Team Project",
+    "assessment_id": "_9028411_1",
+    "attempt_id": "_136113_1",
+    "attempt_number": 1,
+    "submitted_at_display": "07/05/2026, 01:13 (UTC+8)",
+    "group": "1 eWaste",
+    "original_filename": "1 eWaste.pdf",
+    "source_url": "https://vle.shef.ac.uk/ultra/courses/_123515_1/assessment/_9028411_1/overview",
+    "downloaded_via": "Blackboard submitted attempt attachment Download menu",
+    "assignment_requirement": "Please upload your Final report here in PDF format."
+  },
+  "group_membership": "Blackboard confirms Yongjiang Liu in group 1 eWaste; the PDF spelling Yongqiang Liu is preserved as submitted.",
+  "source_code": "The Blackboard assessment requires only final PDF; no source ZIP attached. Final GitLab source recovery remains separate.",
+  "privacy": "Private repository; original team names and local demo examples preserved, no grades or assessor feedback included.",
+  "local_prior_copy": {
+    "filename": "1+eWaste.pdf",
+    "sha256": "91f69fd6758cd5d6c7f5c8d0eef21f94ba78e2529ddad3c166ad3775965b7576",
+    "relationship": "Text content and embedded image contents match official PDF; local copy was saved through PSPDFKit and is not canonical."
+  }
+}
