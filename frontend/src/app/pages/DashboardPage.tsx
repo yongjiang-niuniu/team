@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ChangeEvent, ElementType, FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Smartphone,
   Laptop,
@@ -25,6 +26,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ReferralQrDialog } from '../components/ReferralQrDialog';
 import {
   deleteMyDevice,
   downloadVaultArchivePackage,
@@ -36,8 +38,10 @@ import {
   formatDeviceTypeLabel,
   formatPreferredMethodLabel,
   formatRequestStatusLabel,
+  issueReferralCode,
   type PortalDevice,
   type PortalRequest,
+  type ReferralCode,
   type VaultArchive,
   updateMyDevice,
 } from '../lib/userPortal';
@@ -88,6 +92,31 @@ const FILTER_STATUS_OPTIONS: DeviceStatus[] = ['Unknown', 'Current', 'Recycle', 
 const DEVICE_TYPE_OPTIONS = ['phone', 'laptop', 'tablet', 'console', 'other'] as const;
 const CONDITION_OPTIONS = ['working', 'broken', 'unknown'] as const;
 const DEMAND_OPTIONS = ['high', 'medium', 'low', 'unknown'] as const;
+const PAGE_SIZE = 5;
+
+function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
+  const headers = Array.from(rows.reduce((set, row) => {
+    Object.keys(row).forEach((key) => set.add(key));
+    return set;
+  }, new Set<string>()));
+  const escapeValue = (value: unknown) => {
+    const text = value === null || value === undefined ? '' : String(value);
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+  const body = [
+    headers.join(','),
+    ...rows.map((row) => headers.map((header) => escapeValue(row[header])).join(',')),
+  ].join('\n');
+  const blob = new Blob([body], { type: 'text/csv;charset=utf-8' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
 
 function toDeviceFormState(device: PortalDevice | null): DeviceFormState {
   return {
@@ -100,6 +129,7 @@ function toDeviceFormState(device: PortalDevice | null): DeviceFormState {
 }
 
 export function DashboardPage() {
+  const [searchParams] = useSearchParams();
   const [selectedDevice, setSelectedDevice] = useState<RequestItem | null>(null);
   const [selectedRequestDetail, setSelectedRequestDetail] = useState<PortalRequest | null>(null);
   const [selectedDeviceDetail, setSelectedDeviceDetail] = useState<PortalDevice | null>(null);
@@ -112,10 +142,13 @@ export function DashboardPage() {
   const [isEditingDevice, setIsEditingDevice] = useState(false);
   const [isSavingDevice, setIsSavingDevice] = useState(false);
   const [deletingDeviceId, setDeletingDeviceId] = useState<number | null>(null);
+  const [issuingReferralRequestId, setIssuingReferralRequestId] = useState<number | null>(null);
+  const [selectedReferral, setSelectedReferral] = useState<ReferralCode | null>(null);
   const [deviceForm, setDeviceForm] = useState<DeviceFormState>(toDeviceFormState(null));
   const [filter, setFilter] = useState({ category: '', status: '' });
   const [draftFilter, setDraftFilter] = useState({ category: '', status: '' });
   const [showFilter, setShowFilter] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (showFilter) {
@@ -331,6 +364,43 @@ export function DashboardPage() {
     }
   };
 
+  const handleGenerateReferralQr = async (requestItem: RequestItem) => {
+    if (!requestItem.deviceId) {
+      setErrorMessage('This request does not have a saved device yet.');
+      return;
+    }
+
+    setIssuingReferralRequestId(requestItem.requestId);
+    setErrorMessage('');
+    try {
+      const referral = await issueReferralCode({
+        device_id: requestItem.deviceId,
+        request_id: requestItem.requestId,
+      });
+      setSelectedReferral(referral);
+    } catch (error: unknown) {
+      setErrorMessage(getApiStyleErrorMessage(error, 'Could not generate a trade-in QR code right now.'));
+    } finally {
+      setIssuingReferralRequestId(null);
+    }
+  };
+
+  const handleExport = () => {
+    downloadCsv(
+      `ewaste-requests-${new Date().toISOString().slice(0, 10)}.csv`,
+      filteredRequests.map((request) => ({
+        request_id: request.id,
+        device: request.name,
+        category: request.category,
+        status: request.status,
+        service: request.serviceType,
+        submitted: request.date,
+        workflow: request.request.device?.workflow_status,
+      })),
+    );
+  };
+
+  const searchQuery = (searchParams.get('q') || '').trim().toLowerCase();
   const filteredRequests = requests.filter((request) => {
     if (filter.category && request.category !== filter.category) {
       return false;
@@ -338,8 +408,37 @@ export function DashboardPage() {
     if (filter.status && request.status !== filter.status) {
       return false;
     }
+    if (searchQuery) {
+      const searchable = [
+        request.id,
+        request.name,
+        request.category,
+        request.status,
+        request.serviceType,
+        request.request.device?.workflow_status,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (!searchable.includes(searchQuery)) {
+        return false;
+      }
+    }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / PAGE_SIZE));
+  const pagedRequests = filteredRequests.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter.category, filter.status, searchQuery]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const stats = [
     {
@@ -383,7 +482,12 @@ export function DashboardPage() {
             <Filter className="w-4 h-4" />
             Filter
           </button>
-          <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={!filteredRequests.length}
+            className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+          >
             <Download className="w-4 h-4" />
             Export
           </button>
@@ -569,7 +673,7 @@ export function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filteredRequests.map((request, index) => (
+                {pagedRequests.map((request, index) => (
                   <motion.tr
                     key={request.id}
                     initial={{ opacity: 0 }}
@@ -634,11 +738,16 @@ export function DashboardPage() {
                         </div>
                       ) : request.serviceType !== 'Retrieval (Paid)' && request.status === 'Current' ? (
                         <button
-                          onClick={(event) => event.stopPropagation()}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void handleGenerateReferralQr(request);
+                          }}
+                          disabled={issuingReferralRequestId === request.requestId}
                           className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                         >
                           <QrCode className="w-4 h-4" />
-                          Get Trade-in QRCode
+                          {issuingReferralRequestId === request.requestId ? 'Issuing...' : 'Get Trade-in QRCode'}
                         </button>
                       ) : null}
                     </td>
@@ -651,11 +760,28 @@ export function DashboardPage() {
 
         <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between">
           <p className="text-sm font-bold text-slate-400">
-            Showing {filteredRequests.length ? 1 : 0} to {filteredRequests.length} of {requests.length} requests
+            Showing {filteredRequests.length ? (currentPage - 1) * PAGE_SIZE + 1 : 0} to {Math.min(currentPage * PAGE_SIZE, filteredRequests.length)} of {filteredRequests.length} requests
           </p>
           <div className="flex items-center gap-2">
-            <button className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-400 cursor-not-allowed">Previous</button>
-            <button className="px-4 py-2 rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all">Next</button>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage <= 1}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 disabled:text-slate-300 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-400">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-4 py-2 rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-600 hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
@@ -845,10 +971,15 @@ export function DashboardPage() {
                         </div>
 
                         <div className="flex flex-col gap-3">
-                          <button className="relative w-full overflow-hidden group bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl p-6 transition-all shadow-xl shadow-emerald-600/20 flex flex-col items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleGenerateReferralQr(selectedDevice)}
+                            disabled={issuingReferralRequestId === selectedDevice.requestId}
+                            className="relative w-full overflow-hidden group bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white rounded-2xl p-6 transition-all shadow-xl shadow-emerald-600/20 flex flex-col items-center justify-center gap-2"
+                          >
                             <div className="flex items-center gap-2 text-lg font-black tracking-tight z-10">
                               <QrCode className="w-5 h-5" />
-                              Generate Trade-in QR Code
+                              {issuingReferralRequestId === selectedDevice.requestId ? 'Issuing Trade-in QR Code...' : 'Generate Trade-in QR Code'}
                             </div>
                             <p className="text-emerald-100 text-sm font-medium z-10">Includes Referral ID for eWaste Hub & your Bonus Voucher</p>
                             <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:scale-110 transition-transform">
@@ -1056,6 +1187,8 @@ export function DashboardPage() {
           </div>
         </div>
       ) : null}
+
+      <ReferralQrDialog referral={selectedReferral} onClose={() => setSelectedReferral(null)} />
     </div>
   );
 }

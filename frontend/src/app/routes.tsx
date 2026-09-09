@@ -11,9 +11,11 @@ import { BackOfficeLayout } from "./layouts/BackOfficeLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { NewRequestPage } from "./pages/NewRequestPage";
 import { PaymentCancelPage } from "./pages/PaymentCancelPage";
+import { PaymentDemoPage } from "./pages/PaymentDemoPage";
 import { PaymentSuccessPage } from "./pages/PaymentSuccessPage";
 import { SecurityVaultPage } from "./pages/SecurityVaultPage";
 import { RewardsPage } from "./pages/RewardsPage";
+import { ReferralCredentialPage } from "./pages/ReferralCredentialPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StaffPortalPage } from "./pages/StaffPortalPage";
 import { StaffOverviewPage } from "./pages/staff/StaffOverviewPage";
@@ -23,6 +25,7 @@ import { StaffUnknownQueuePage } from "./pages/staff/StaffUnknownQueuePage";
 import { StaffRetrievalPage } from "./pages/staff/StaffRetrievalPage";
 import { StaffWipeJobsPage } from "./pages/staff/StaffWipeJobsPage";
 import { StaffReferralsPage } from "./pages/staff/StaffReferralsPage";
+import { StaffReportsPage } from "./pages/staff/StaffReportsPage";
 import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { AdminPaymentsPage } from "./pages/admin/AdminPaymentsPage";
@@ -93,6 +96,10 @@ export const router = createBrowserRouter([
                 Component: StaffReferralsPage,
               },
               {
+                path: "/staff/reports",
+                Component: StaffReportsPage,
+              },
+              {
                 path: "/staff/workspace",
                 Component: StaffPortalPage,
               },
@@ -155,6 +162,10 @@ export const router = createBrowserRouter([
             Component: PaymentSuccessPage,
           },
           {
+            path: "payment/demo",
+            Component: PaymentDemoPage,
+          },
+          {
             path: "payment/cancel",
             Component: PaymentCancelPage,
           },
@@ -165,6 +176,10 @@ export const router = createBrowserRouter([
           {
             path: "rewards",
             Component: RewardsPage,
+          },
+          {
+            path: "rewards/referrals/:referralId",
+            Component: ReferralCredentialPage,
           },
           {
             path: "settings",

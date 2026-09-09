@@ -40,6 +40,16 @@ export async function fetchStaffRequests(): Promise<PortalRequest[]> {
   return response.data?.requests ?? [];
 }
 
+export async function fetchStaffDeviceStats(): Promise<DeviceStats> {
+  const response = await api.get('/api/devices/statistics');
+  return response.data ?? {};
+}
+
+export async function createDraftFromStaffRequest(requestId: number): Promise<PortalDevice | null> {
+  const response = await api.post(`/api/requests/${requestId}/staff-draft`);
+  return response.data?.device ?? null;
+}
+
 export async function updateStaffRequestStatus(
   requestId: number,
   status: string,

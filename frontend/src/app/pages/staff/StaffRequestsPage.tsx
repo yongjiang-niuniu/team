@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { FilePlus2, Loader2 } from "lucide-react";
 
 import { BackOfficeTable, BackOfficeTd, BackOfficeTh } from "../../components/backoffice/BackOfficeTable";
 import { BackOfficeSelect } from "../../components/backoffice/BackOfficeSelect";
 import { StatusBadge } from "../../components/backoffice/StatusBadge";
 import { statusTone } from "../../components/backoffice/statusTone";
 import { getApiStyleErrorMessage } from "../../lib/httpErrors";
-import { fetchStaffRequests, updateStaffRequestStatus } from "../../lib/staffPortal";
+import { createDraftFromStaffRequest, fetchStaffRequests, updateStaffRequestStatus } from "../../lib/staffPortal";
 import { createStaffRequest, type PortalRequest } from "../../lib/userPortal";
 
 const REQUEST_STATUS_OPTIONS = ['submitted', 'approved', 'rejected', 'completed'] as const;
 const ACTIVE_STATUSES = new Set(['submitted', 'approved']);
 const HISTORY_STATUSES = new Set(['rejected', 'completed']);
-const DEVICE_TYPE_OPTIONS = ['phone', 'laptop', 'tablet', 'console', 'television', 'other'] as const;
-const CONDITION_OPTIONS = ['working', 'damaged', 'broken', 'unknown'] as const;
+const DEVICE_TYPE_OPTIONS = ['phone', 'laptop', 'tablet', 'console', 'other'] as const;
+const CONDITION_OPTIONS = ['working', 'broken', 'unknown'] as const;
 const METHOD_OPTIONS = ['pickup', 'dropoff'] as const;
 
 type StaffRequestForm = {
@@ -49,6 +49,7 @@ export function StaffRequestsPage() {
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [draftingId, setDraftingId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<StaffRequestForm>(emptyStaffRequestForm);
   const [errorMessage, setErrorMessage] = useState('');
@@ -116,6 +117,25 @@ export function StaffRequestsPage() {
       setErrorMessage(getApiStyleErrorMessage(error, 'Could not update request status.'));
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleCreateDraft = async (requestId: number) => {
+    setDraftingId(requestId);
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      const draft = await createDraftFromStaffRequest(requestId);
+      setSuccessMessage(
+        draft
+          ? `Hidden draft #${draft.id} was created from request #${requestId}.`
+          : `A hidden draft was created from request #${requestId}.`,
+      );
+      await loadRequests();
+    } catch (error: unknown) {
+      setErrorMessage(getApiStyleErrorMessage(error, 'Could not create a staff draft from this request.'));
+    } finally {
+      setDraftingId(null);
     }
   };
 
@@ -284,17 +304,28 @@ export function StaffRequestsPage() {
                   <StatusBadge value={request.status} tone={statusTone(request.status)} />
                 </BackOfficeTd>
                 <BackOfficeTd>
-                  <BackOfficeSelect
-                    value={request.status}
-                    disabled={updatingId === request.id}
-                    onChange={(e) => void handleStatusChange(request.id, e.target.value)}
-                  >
-                    {REQUEST_STATUS_OPTIONS.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </BackOfficeSelect>
+                  <div className="flex flex-wrap gap-2">
+                    <BackOfficeSelect
+                      value={request.status}
+                      disabled={updatingId === request.id}
+                      onChange={(e) => void handleStatusChange(request.id, e.target.value)}
+                    >
+                      {REQUEST_STATUS_OPTIONS.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </BackOfficeSelect>
+                    <button
+                      type="button"
+                      onClick={() => void handleCreateDraft(request.id)}
+                      disabled={draftingId === request.id}
+                      className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
+                    >
+                      <FilePlus2 className="h-4 w-4" />
+                      {draftingId === request.id ? 'Drafting...' : 'Draft from offer'}
+                    </button>
+                  </div>
                 </BackOfficeTd>
               </tr>
             ))}
@@ -426,4 +457,3 @@ export function StaffRequestsPage() {
     </div>
   );
 }
-

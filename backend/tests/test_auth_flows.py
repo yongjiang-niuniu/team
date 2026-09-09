@@ -47,12 +47,13 @@ class AuthFlowTestCase(unittest.TestCase):
         extensions_module = importlib.import_module("ewastehub.extensions")
         models_module = importlib.import_module("ewastehub.models")
 
-        global db, Base, DataRetrievalDownload, PaymentTransaction, ReferralActivity
+        global db, Base, DataRetrievalDownload, Notification, PaymentTransaction, ReferralActivity
         global ReferralCode, ReferralFee, ThirdPartyPartner, User, get_session
         global create_data_retrieval_request, PasswordResetToken, AppUser
         db = extensions_module.db
         Base = cls.db_new_test_module.Base
         DataRetrievalDownload = cls.db_new_test_module.DataRetrievalDownload
+        Notification = cls.db_new_test_module.Notification
         PaymentTransaction = cls.db_new_test_module.PaymentTransaction
         ReferralActivity = cls.db_new_test_module.ReferralActivity
         ReferralCode = cls.db_new_test_module.ReferralCode
@@ -95,6 +96,7 @@ class AuthFlowTestCase(unittest.TestCase):
             db.metadata.drop_all(bind=db.engine, tables=[PasswordResetToken.__table__])
             db.metadata.create_all(bind=db.engine, tables=[AppUser.__table__])
             db.metadata.create_all(bind=db.engine, tables=[PasswordResetToken.__table__])
+            self.app.extensions["mail_outbox"] = []
 
     def tearDown(self):
         with self.app.app_context():
@@ -451,6 +453,27 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertEqual(second.status_code, 409)
         self.assertEqual(second.get_json()["error"], "email already registered")
 
+    def test_user_can_update_profile_name(self):
+        token = self._register_and_login("profile-user@example.com")
+
+        response = self.client.patch(
+            "/api/me",
+            json={"full_name": "Yongjiang Liu"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()["user"]
+        self.assertEqual(payload["email"], "profile-user@example.com")
+        self.assertEqual(payload["full_name"], "Yongjiang Liu")
+
+        me_response = self.client.get(
+            "/api/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(me_response.status_code, 200)
+        self.assertEqual(me_response.get_json()["user"]["full_name"], "Yongjiang Liu")
+
     def test_registered_user_can_submit_new_recycling_request(self):
         token = self._register_and_login("request-user@example.com")
 
@@ -476,6 +499,87 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertEqual(payload["request"]["preferred_method"], "dropoff")
         self.assertEqual(payload["request"]["device"]["name"], "iPhone 13")
         self.assertEqual(payload["request"]["device"]["device_type"], "phone")
+
+    def test_notifications_are_persistent_and_user_scoped(self):
+        owner_token = self._register_and_login("notification-owner@example.com")
+        other_token = self._register_and_login("notification-other@example.com")
+
+        request_response = self.client.post(
+            "/api/requests",
+            json={
+                "item_name": "Notification iPhone",
+                "category": "phone",
+                "condition": "working",
+                "preferred_method": "dropoff",
+                "age_years": 1,
+                "demand": "medium",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(request_response.status_code, 201)
+        request_payload = request_response.get_json()["request"]
+
+        list_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(list_response.status_code, 200)
+        payload = list_response.get_json()
+        self.assertEqual(payload["unread_count"], 1)
+        notification = payload["notifications"][0]
+        self.assertEqual(notification["kind"], "request")
+        self.assertEqual(notification["title"], "Request submitted")
+        self.assertEqual(notification["target_path"], f"/app/dashboard?q=EW-{request_payload['id']}")
+        self.assertIsNone(notification["read_at"])
+
+        other_list_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {other_token}"},
+        )
+        self.assertEqual(other_list_response.status_code, 200)
+        self.assertEqual(other_list_response.get_json()["notifications"], [])
+
+        forbidden_read_response = self.client.patch(
+            f"/api/notifications/{notification['id']}/read",
+            headers={"Authorization": f"Bearer {other_token}"},
+        )
+        self.assertEqual(forbidden_read_response.status_code, 404)
+
+        read_response = self.client.patch(
+            f"/api/notifications/{notification['id']}/read",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(read_response.status_code, 200)
+        self.assertIsNotNone(read_response.get_json()["notification"]["read_at"])
+
+        retrieval_response = self.client.post(
+            "/api/retrieval-requests",
+            json={
+                "device_id": request_payload["device"]["id"],
+                "note": "Please recover family photos",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(retrieval_response.status_code, 201)
+
+        unread_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(unread_response.get_json()["unread_count"], 1)
+
+        read_all_response = self.client.patch(
+            "/api/notifications/read-all",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(read_all_response.status_code, 200)
+        self.assertEqual(read_all_response.get_json()["updated"], 1)
+
+        refreshed_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(refreshed_response.get_json()["unread_count"], 0)
 
     def test_forgot_password_requires_email(self):
         response = self.client.post("/api/auth/forgot-password", json={})
@@ -518,6 +622,13 @@ class AuthFlowTestCase(unittest.TestCase):
             self.assertTrue(token_record.token)
             self.assertFalse(token_record.used)
             self.assertGreater(token_record.expires_at, token_record.created_at)
+            outbox = self.app.extensions.get("mail_outbox", [])
+            self.assertEqual(len(outbox), 1)
+            email_message = outbox[0]
+            self.assertEqual(email_message["to"], "reset-user@example.com")
+            self.assertIn("Reset your eWaste Hub password", email_message["subject"])
+            self.assertIn("/reset-password?token=", email_message["text_body"])
+            self.assertIn(token_record.token, email_message["text_body"])
 
     def test_forgot_password_returns_generic_success_for_unknown_email(self):
         with self.app.app_context():
@@ -544,6 +655,34 @@ class AuthFlowTestCase(unittest.TestCase):
         with self.app.app_context():
             after_count = db.session.query(PasswordResetToken).count()
             self.assertEqual(after_count, before_count)
+            self.assertEqual(self.app.extensions.get("mail_outbox", []), [])
+
+    def test_forgot_password_does_not_issue_token_for_oauth_user(self):
+        with self.app.app_context():
+            google_user = AppUser(
+                email="oauth-reset@example.com",
+                auth_provider="google",
+                google_sub="oauth-reset-sub",
+                password_hash="google-placeholder",
+                role="consumer",
+            )
+            db.session.add(google_user)
+            db.session.commit()
+
+        response = self.client.post(
+            "/api/auth/forgot-password",
+            json={"email": "oauth-reset@example.com"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            {"message": "If the email is registered, password reset instructions will be sent."},
+        )
+
+        with self.app.app_context():
+            self.assertEqual(db.session.query(PasswordResetToken).count(), 0)
+            self.assertEqual(self.app.extensions.get("mail_outbox", []), [])
 
     def test_reset_password_with_valid_token_updates_password_and_marks_token_used(self):
         token, user_id = self._create_reset_token("reset-valid@example.com")
@@ -2032,6 +2171,56 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertEqual(request_payload["device"]["workflow_status"], "processing")
         self.assertEqual(request_payload["device"]["name"], "Staff Submitted Request")
 
+    def test_staff_can_create_hidden_draft_from_owner_offer_and_publish(self):
+        owner_token = self._register_and_login("draft-from-offer-owner@example.com")
+        staff_token, _ = self._make_access_token_for_role("draft-from-offer-staff@example.com", "staff")
+
+        request_response = self.client.post(
+            "/api/requests",
+            json={
+                "item_name": "Owner Offered Laptop",
+                "category": "laptop",
+                "condition": "working",
+                "preferred_method": "dropoff",
+                "age_years": 1,
+                "demand": "high",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(request_response.status_code, 201)
+        request_payload = request_response.get_json()["request"]
+
+        draft_response = self.client.post(
+            f"/api/requests/{request_payload['id']}/staff-draft",
+            headers={"Authorization": f"Bearer {staff_token}"},
+        )
+
+        self.assertEqual(draft_response.status_code, 201)
+        draft = draft_response.get_json()["device"]
+        self.assertEqual(draft["owner_id"], request_payload["consumer_id"])
+        self.assertEqual(draft["name"], "Owner Offered Laptop")
+        self.assertEqual(draft["device_type"], "laptop")
+        self.assertEqual(draft["condition"], "working")
+        self.assertEqual(draft["demand"], "high")
+        self.assertEqual(draft["classification"], "current")
+        self.assertTrue(draft["is_draft"])
+        self.assertFalse(draft["is_visible"])
+
+        publish_draft_response = self.client.patch(
+            f"/api/devices/{draft['id']}/draft",
+            json={"is_draft": False},
+            headers={"Authorization": f"Bearer {staff_token}"},
+        )
+        publish_visibility_response = self.client.patch(
+            f"/api/devices/{draft['id']}/visibility",
+            json={"is_visible": True},
+            headers={"Authorization": f"Bearer {staff_token}"},
+        )
+        self.assertEqual(publish_draft_response.status_code, 200)
+        self.assertEqual(publish_visibility_response.status_code, 200)
+        self.assertFalse(publish_draft_response.get_json()["device"]["is_draft"])
+        self.assertTrue(publish_visibility_response.get_json()["device"]["is_visible"])
+
     def test_unknown_request_queue_requires_staff_or_admin(self):
         owner_token = self._register_and_login("request-owner-unknown-queue-blocked@example.com")
 
@@ -2263,10 +2452,12 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertEqual(transaction["provider"], "stripe")
         self.assertEqual(transaction["status"], "initiated")
         self.assertEqual(checkout_payload["retrieval_request"]["payment_status"], "pending")
-        self.assertEqual(checkout_payload["checkout"]["integration_mode"], "stub")
+        self.assertEqual(checkout_payload["checkout"]["integration_mode"], "demo_sandbox")
+        self.assertTrue(checkout_payload["checkout"]["is_demo"])
         self.assertFalse(checkout_payload["checkout"]["provider_configured"])
-        self.assertTrue(checkout_payload["checkout"]["success_url"])
-        self.assertTrue(checkout_payload["checkout"]["cancel_url"])
+        self.assertIn("/app/payment/demo", checkout_payload["checkout"]["success_url"])
+        self.assertIn("/app/payment/demo", checkout_payload["checkout"]["cancel_url"])
+        self.assertIn("Demo only", checkout_payload["checkout"]["demo_notice"])
 
         confirm_response = self.client.post(
             f"/api/retrieval-requests/{retrieval_request_id}/payment-status",
@@ -2275,7 +2466,8 @@ class AuthFlowTestCase(unittest.TestCase):
                 "payment_kind": "initial_retrieval",
                 "transaction_id": transaction["id"],
                 "status": "paid",
-                "provider_payment_id": "pi_test_123",
+                "checkout_reference": transaction["checkout_reference"],
+                "provider_payment_id": f"demo_stripe_{transaction['checkout_reference']}",
             },
             headers={"Authorization": f"Bearer {owner_token}"},
         )
@@ -2287,12 +2479,67 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertEqual(updated_transaction["status"], "paid")
         self.assertEqual(updated_request["payment_status"], "paid")
         self.assertEqual(updated_request["payment_provider"], "stripe")
-        self.assertEqual(updated_request["payment_reference"], "pi_test_123")
+        self.assertEqual(updated_request["payment_reference"], f"demo_stripe_{transaction['checkout_reference']}")
         self.assertIsNotNone(updated_request["paid_at"])
         self.assertIsNotNone(updated_request["storage_expires_at"])
         self.assertEqual(updated_request["status"], "pending")
         self.assertEqual(updated_request["retrieval_status"], "paid")
         self.assertEqual(updated_request["latest_payment_transaction"]["status"], "paid")
+
+    def test_demo_checkout_can_cancel_and_rejects_invalid_provider(self):
+        owner_token = self._register_and_login("checkout-cancel-owner@example.com")
+
+        create_device_response = self.client.post(
+            "/api/devices",
+            json={
+                "name": "Cancelled Checkout Device",
+                "device_type": "tablet",
+                "condition": "working",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        device_id = create_device_response.get_json()["device"]["id"]
+        create_retrieval_response = self.client.post(
+            "/api/retrieval-requests",
+            json={"device_id": device_id},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        retrieval_request_id = create_retrieval_response.get_json()["retrieval_request"]["id"]
+
+        invalid_provider_response = self.client.post(
+            f"/api/retrieval-requests/{retrieval_request_id}/checkout",
+            json={"provider": "bank"},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(invalid_provider_response.status_code, 400)
+        self.assertEqual(invalid_provider_response.get_json()["error"], "invalid provider")
+
+        checkout_response = self.client.post(
+            f"/api/retrieval-requests/{retrieval_request_id}/checkout",
+            json={"provider": "paypal"},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        transaction = checkout_response.get_json()["payment_transaction"]
+
+        cancel_response = self.client.post(
+            f"/api/retrieval-requests/{retrieval_request_id}/payment-status",
+            json={
+                "provider": "paypal",
+                "payment_kind": "initial_retrieval",
+                "transaction_id": transaction["id"],
+                "checkout_reference": transaction["checkout_reference"],
+                "status": "cancelled",
+                "provider_payment_id": f"demo_paypal_{transaction['checkout_reference']}_cancelled",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+
+        self.assertEqual(cancel_response.status_code, 200)
+        payload = cancel_response.get_json()
+        self.assertEqual(payload["payment_transaction"]["status"], "cancelled")
+        self.assertEqual(payload["retrieval_request"]["payment_status"], "cancelled")
+        self.assertEqual(payload["retrieval_request"]["payment_provider"], "paypal")
+        self.assertIsNotNone(payload["payment_transaction"]["cancelled_at"])
 
     def test_staff_can_mark_paid_retrieval_completed_and_issue_secure_download(self):
         owner_token = self._register_and_login("download-owner@example.com")
@@ -2344,6 +2591,29 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertIsNotNone(download["expires_at"])
         self.assertEqual(download["retrieval_request"]["owner_id"], owner_id)
         self.assertEqual(download["retrieval_request"]["status"], "active")
+
+        access_response = self.client.get(
+            download["download_url"],
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(access_response.status_code, 200)
+        access_payload = access_response.get_json()["download"]
+        self.assertEqual(access_payload["content"]["demo_cloud_provider"], "eWaste Hub Demo Cloud")
+        self.assertIn("demo-cloud/retrieval-", access_payload["demo_cloud_archive"]["storage_key"])
+        self.assertGreaterEqual(len(access_payload["demo_cloud_archive"]["file_manifest"]), 3)
+        self.assertIn("data-wiping guarantee", access_payload["demo_cloud_archive"]["wipe_guarantee_note"])
+
+        notifications_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(notifications_response.status_code, 200)
+        notification_titles = [
+            item["title"]
+            for item in notifications_response.get_json()["notifications"]
+            if item["target_path"] == "/app/security-vault"
+        ]
+        self.assertIn("Data retrieval complete", notification_titles)
 
     def test_issue_download_link_rejects_non_ready_retrieval_request(self):
         owner_token = self._register_and_login("download-pending-owner@example.com")
@@ -2662,6 +2932,15 @@ class AuthFlowTestCase(unittest.TestCase):
         rare_partner_names = [item["name"] for item in rare_partners_response.get_json()["partners"]]
         self.assertIn("CeX UK", current_partner_names)
         self.assertIn("Collector Network", rare_partner_names)
+        current_partner = next(item for item in current_partners_response.get_json()["partners"] if item["name"] == "CeX UK")
+        rare_partner = next(item for item in rare_partners_response.get_json()["partners"] if item["name"] == "Collector Network")
+        self.assertIn("GBP", current_partner["demo_estimated_value"])
+        self.assertIn("CeX", current_partner["demo_value_source"])
+        self.assertTrue(current_partner["demo_hand_in_locations"])
+        self.assertIn("wiping guarantee", current_partner["demo_wiping_guarantee"])
+        self.assertIn("GBP", rare_partner["demo_estimated_value"])
+        self.assertIn("eBay", rare_partner["demo_value_source"])
+        self.assertTrue(rare_partner["partner_detail_url"])
 
     def test_owner_can_issue_referral_and_rewards_page_stays_compatible(self):
         owner_token = self._register_and_login("referral-issue-owner@example.com")
@@ -2695,6 +2974,20 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertTrue(referral["code"])
         self.assertTrue(referral["qr_payload"])
         self.assertTrue(referral["qr_target_url"])
+
+        notifications_response = self.client.get(
+            "/api/notifications/mine",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        self.assertEqual(notifications_response.status_code, 200)
+        notifications = notifications_response.get_json()["notifications"]
+        referral_notifications = [
+            item
+            for item in notifications
+            if item["kind"] == "referral" and item["target_path"] == f"/app/rewards/referrals/{referral['id']}"
+        ]
+        self.assertEqual(len(referral_notifications), 1)
+        self.assertEqual(referral_notifications[0]["title"], "Trade-in QR code ready")
 
         detail_response = self.client.get(
             f"/api/rewards/referrals/code/{referral['code']}",
@@ -2738,7 +3031,12 @@ class AuthFlowTestCase(unittest.TestCase):
 
         open_response = self.client.post(
             f"/api/rewards/referrals/{referral_id}/open",
-            json={"source": "dashboard"},
+            json={"source": "qr_credential_page", "event_reference": "credential_page"},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        second_open_response = self.client.post(
+            f"/api/rewards/referrals/{referral_id}/open",
+            json={"source": "qr_credential_page", "event_reference": "credential_page"},
             headers={"Authorization": f"Bearer {owner_token}"},
         )
         redeem_response = self.client.post(
@@ -2748,6 +3046,7 @@ class AuthFlowTestCase(unittest.TestCase):
         )
 
         self.assertEqual(open_response.status_code, 200)
+        self.assertEqual(second_open_response.status_code, 200)
         self.assertEqual(redeem_response.status_code, 200)
         updated_referral = redeem_response.get_json()["referral"]
         self.assertEqual(updated_referral["status"], "redeemed")
@@ -2755,6 +3054,12 @@ class AuthFlowTestCase(unittest.TestCase):
         self.assertIn("issued", activity_types)
         self.assertIn("opened", activity_types)
         self.assertIn("redeemed", activity_types)
+        opened_activities = [
+            item
+            for item in updated_referral["activities"]
+            if item["event_type"] == "opened" and item["event_reference"] == "credential_page"
+        ]
+        self.assertEqual(len(opened_activities), 1)
 
     def test_staff_can_record_referral_events_and_manage_referral_fees(self):
         owner_token = self._register_and_login("referral-fee-owner@example.com")

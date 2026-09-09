@@ -45,7 +45,7 @@ function statusStyles(status: PaymentSummary['status']) {
 export function PaymentSummaryCard({
   summary,
   title = 'Payment Overview',
-  subtitle = 'This card is wired for the future payment foundation fields and currently shows the available request pricing data.',
+  subtitle = 'Payment details will update here as your retrieval moves through checkout.',
 }: PaymentSummaryCardProps) {
   const { badge, iconBox, Icon } = statusStyles(summary.status);
   const amount = summary.amount ?? summary.finalPrice ?? summary.quotedPrice ?? null;
@@ -90,9 +90,9 @@ export function PaymentSummaryCard({
           <p className="text-xs font-black uppercase tracking-widest text-slate-400">Reference</p>
           <p
             className="mt-1 break-all text-sm font-bold text-slate-900"
-            title={summary.reference || 'Will be added by backend'}
+            title={summary.reference || 'Awaiting reference'}
           >
-            {summary.reference || 'Will be added by backend'}
+            {summary.reference || 'Awaiting reference'}
           </p>
         </div>
         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -105,7 +105,7 @@ export function PaymentSummaryCard({
       (summary.finalPrice !== null && summary.finalPrice !== undefined) ||
       summary.note ? (
         <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
-          <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Current Request Data</p>
+          <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Request Details</p>
           <div className="space-y-2 text-sm font-medium text-slate-600">
             <p>
               Quoted price:

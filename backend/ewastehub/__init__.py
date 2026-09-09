@@ -26,6 +26,7 @@ from .modules.devices import devices_bp
 from .modules.reports import reports_bp
 from .modules.vault import retrieval_download_bp, retrieval_requests_bp, vault_bp
 from .modules.rewards import rewards_bp
+from .modules.notifications import notifications_bp
 
 
 def _ensure_sqlite_schema(app: Flask) -> None:
@@ -135,6 +136,21 @@ def create_app():
         "FRONTEND_URL",
         app.config.get("FRONTEND_URL", "http://127.0.0.1:5173"),
     ).rstrip("/")
+    for key, default in {
+        "SMTP_HOST": "",
+        "SMTP_PORT": "587",
+        "SMTP_USERNAME": "",
+        "SMTP_PASSWORD": "",
+        "SMTP_USE_TLS": "true",
+        "SMTP_USE_SSL": "false",
+        "SMTP_TIMEOUT": "10",
+        "MAIL_DEFAULT_SENDER": "",
+        "MAIL_SENDER_NAME": "eWaste Hub",
+        "MAIL_SUPPRESS_SEND": "false",
+        "PASSWORD_RESET_EMAIL_SUBJECT": "Reset your eWaste Hub password",
+    }.items():
+        value = os.getenv(key, app.config.get(key, default))
+        app.config[key] = value if key == "SMTP_PASSWORD" else str(value).strip()
     app.config["SQLALCHEMY_DATABASE_URI"] = resolve_database_url()
 
     db.init_app(app)
@@ -151,6 +167,7 @@ def create_app():
     app.register_blueprint(retrieval_requests_bp)
     app.register_blueprint(retrieval_download_bp)
     app.register_blueprint(rewards_bp)
+    app.register_blueprint(notifications_bp)
     if _should_bootstrap_schema():
         _ensure_sqlite_schema(app)
         _ensure_bridge_schema()

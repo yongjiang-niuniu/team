@@ -45,6 +45,41 @@ def me():
         }
     })
 
+
+@api_bp.patch("/me")
+@jwt_required()
+def update_me():
+    user_id = int(get_jwt_identity())
+    user = db.session.query(User).filter_by(id=user_id).one_or_none()
+    if user is None:
+        return jsonify({"error": "user not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    if "full_name" not in data:
+        return jsonify({"error": "no supported fields supplied", "supported": ["full_name"]}), 400
+
+    full_name = data.get("full_name")
+    if full_name is not None and not isinstance(full_name, str):
+        return jsonify({"error": "invalid full_name"}), 400
+    full_name = (full_name or "").strip() or None
+    if full_name and len(full_name) > 255:
+        return jsonify({"error": "full_name is too long"}), 400
+
+    user.full_name = full_name
+    db.session.commit()
+    db.session.refresh(user)
+
+    return jsonify({
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": getattr(user, "full_name", None),
+            "auth_provider": getattr(user, "auth_provider", "local"),
+            "role": user.role,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+        }
+    })
+
 @api_bp.get("/admin/ping")
 @require_roles("admin")
 def admin_ping():

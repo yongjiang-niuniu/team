@@ -174,8 +174,8 @@ export function AdminReferralsPage() {
             />
             <ReferralMetric
               label="Paid"
-              value={`AUD ${Number(summary?.fee_amount_paid || 0).toFixed(2)}`}
-              detail={`Confirmed AUD ${Number(summary?.fee_amount_confirmed || 0).toFixed(2)}`}
+              value={`GBP ${Number(summary?.fee_amount_paid || 0).toFixed(2)}`}
+              detail={`Confirmed GBP ${Number(summary?.fee_amount_confirmed || 0).toFixed(2)}`}
             />
           </div>
 
@@ -250,7 +250,7 @@ export function AdminReferralsPage() {
                   <BackOfficeTd>{fee.partner?.name || `Partner #${fee.partner_id || 'n/a'}`}</BackOfficeTd>
                   <BackOfficeTd>{fee.referral_code?.code || `#${fee.referral_code_id || 'n/a'}`}</BackOfficeTd>
                   <BackOfficeTd>
-                    {fee.currency || 'AUD'} {Number(fee.fee_amount || 0).toFixed(2)}
+                    {fee.currency || 'GBP'} {Number(fee.fee_amount || 0).toFixed(2)}
                   </BackOfficeTd>
                   <BackOfficeTd>
                     <StatusBadge value={fee.status} tone={statusTone(fee.status)} />

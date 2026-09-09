@@ -104,7 +104,7 @@ export function StaffReferralsPage() {
         referral_code_id: selectedReferral.id,
         status: 'expected',
         fee_amount: feeAmount ? Number(feeAmount) : null,
-        currency: 'AUD',
+        currency: 'GBP',
         fee_reference: eventReference || null,
       });
       setSuccessMessage('Referral fee created.');
@@ -232,7 +232,7 @@ export function StaffReferralsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-black text-slate-900">Referral fees</h3>
-              <p className="text-sm font-medium text-slate-500">Visible total: AUD {totalExpected.toFixed(2)}</p>
+              <p className="text-sm font-medium text-slate-500">Visible total: GBP {totalExpected.toFixed(2)}</p>
             </div>
             <BackOfficeSelect
               value={statusFilter}
@@ -270,7 +270,7 @@ export function StaffReferralsPage() {
                     </BackOfficeTd>
                     <BackOfficeTd>Partner #{fee.partner_id || 'n/a'}</BackOfficeTd>
                     <BackOfficeTd>
-                      {fee.currency || 'AUD'} {Number(fee.fee_amount || 0).toFixed(2)}
+                      {fee.currency || 'GBP'} {Number(fee.fee_amount || 0).toFixed(2)}
                     </BackOfficeTd>
                     <BackOfficeTd>
                       <BackOfficeSelect

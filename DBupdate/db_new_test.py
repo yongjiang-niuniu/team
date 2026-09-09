@@ -37,6 +37,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
+    auth_provider = Column(String, nullable=False, default="local")
+    google_sub = Column(String, unique=True, nullable=True)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False)
     full_name = Column(String)
@@ -280,6 +282,20 @@ class WipeCertificate(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    kind = Column(String, nullable=False, default="system", index=True)
+    severity = Column(String, nullable=False, default="info", index=True)
+    title = Column(String, nullable=False)
+    body = Column(Text, nullable=True)
+    target_path = Column(String, nullable=True)
+    read_at = Column(DateTime, nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
 BRIDGE_BOOTSTRAP_TABLES = (
     "users",
     "devices",
@@ -295,6 +311,7 @@ BRIDGE_BOOTSTRAP_TABLES = (
     "referral_fees",
     "wipe_jobs",
     "wipe_certificates",
+    "notifications",
 )
 
 

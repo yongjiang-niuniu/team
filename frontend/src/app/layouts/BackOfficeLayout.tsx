@@ -28,6 +28,7 @@ const staffLinks = [
   { to: "/staff/retrieval", label: "Retrieval", icon: Lock },
   { to: "/staff/wipe-jobs", label: "Wipe Jobs", icon: Shield },
   { to: "/staff/referrals", label: "Referrals", icon: QrCode },
+  { to: "/staff/reports", label: "Reports", icon: BarChart3 },
   { to: "/staff/workspace", label: "Legacy Workspace", icon: LifeBuoy },
 ];
 

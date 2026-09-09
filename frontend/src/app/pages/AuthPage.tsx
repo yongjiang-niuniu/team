@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { AuthToast, type AuthToastVariant } from '../components/AuthToast';
 import { clearAuthSession, setAccessToken, setStoredUser } from '../lib/auth';
+import { getApiStyleErrorMessage } from '../lib/httpErrors';
 import { getGithubClientId, getGoogleClientId } from '../lib/oauthClientIds';
 import api from '../../api/axios';
 
@@ -277,7 +278,7 @@ export function AuthPage() {
     if (!em) return 'Please enter your email address.';
     if (!EMAIL_OK.test(em)) return 'Please enter a valid email address (include an @).';
     if (!password) return 'Please choose a password.';
-    if (password.length < 6) return 'Password must be at least 6 characters.';
+    if (password.length < 8) return 'Password must be at least 8 characters.';
     if (!termsAccepted) return 'Please accept the Terms of Service and Data Handling Policy to continue.';
     return null;
   };
@@ -423,12 +424,12 @@ export function AuthPage() {
       return;
     }
 
-    if (!backendBaseUrl) {
-      showToast('Backend address is unavailable.', 'error');
-      return;
+    const params = new URLSearchParams({ next: redirectTarget });
+    if (!backendBaseUrl && typeof window !== 'undefined') {
+      params.set('public_origin', window.location.origin);
     }
-
-    const loginUrl = `${backendBaseUrl}/api/auth/github/login?next=${encodeURIComponent(redirectTarget)}`;
+    const loginPath = `/api/auth/github/login?${params.toString()}`;
+    const loginUrl = backendBaseUrl ? `${backendBaseUrl}${loginPath}` : loginPath;
     window.location.assign(loginUrl);
   };
 
@@ -539,8 +540,9 @@ export function AuthPage() {
     };
   }, [googleClientId, isAdmin, handleGoogleCredential, clearGoogleResetTimeout]);
 
-  const handleForgotPassword = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    dismissToast();
     const em = forgotEmail.trim();
     if (!em) {
       showToast('Please enter your email address.', 'error');
@@ -550,9 +552,24 @@ export function AuthPage() {
       showToast('Please enter a valid email address (include an @).', 'error');
       return;
     }
-    showToast(`If this email is registered, a reset link will be sent to ${em}.`, 'info');
-    setForgotEmail('');
-    setIsForgotPassword(false);
+
+    setIsSubmitting(true);
+    try {
+      await api.post('/api/auth/forgot-password', { email: em });
+      showToast(`If this email is registered, a reset link will be sent to ${em}.`, 'success');
+      setForgotEmail('');
+      setIsForgotPassword(false);
+    } catch (error: unknown) {
+      showToast(
+        getApiStyleErrorMessage(
+          error,
+          'We could not submit your reset request right now. Please try again later.',
+        ),
+        'error',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -732,10 +749,11 @@ export function AuthPage() {
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-4.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center gap-2 py-4.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
                   >
                     <Mail className="w-5 h-5" />
-                    Send Reset Link
+                    {isSubmitting ? 'Sending...' : 'Send Reset Link'}
                   </button>
                 </form>
 

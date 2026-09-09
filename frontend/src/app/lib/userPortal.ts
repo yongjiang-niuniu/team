@@ -96,6 +96,7 @@ export type RewardVoucher = {
     device_type: string;
     classification: string;
   } | null;
+  referral_code?: ReferralCode | null;
 };
 
 export type RewardPartner = {
@@ -106,6 +107,11 @@ export type RewardPartner = {
   referral_landing_url?: string | null;
   active: boolean;
   supported_classifications: string[];
+  demo_estimated_value?: string | null;
+  demo_value_source?: string | null;
+  demo_hand_in_locations?: string[];
+  demo_wiping_guarantee?: string | null;
+  partner_detail_url?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 };

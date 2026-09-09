@@ -9,6 +9,7 @@ from DBupdate.db_bridge import (
     INITIAL_RETRIEVAL_PAYMENT_KIND,
     access_data_retrieval_download,
     create_data_retrieval_request,
+    create_notification,
     get_data_retrieval_request,
     get_device as bridge_get_device,
     get_or_create_data_retrieval_download,
@@ -19,6 +20,7 @@ from DBupdate.db_bridge import (
     update_data_retrieval_request_state,
     update_retrieval_payment_transaction,
 )
+from ..email_delivery import EmailDeliveryError, send_transactional_email
 from ..permissions import require_roles
 
 vault_bp = Blueprint("vault", __name__, url_prefix="/api/vault")
@@ -93,31 +95,32 @@ def _build_checkout_payload(retrieval_request, payment_transaction):
     currency = payment_transaction.get("currency") or "GBP"
     device_name = ((retrieval_request.get("device") or {}).get("name")) or f"Retrieval {retrieval_request.get('id')}"
 
+    common_query = {
+        "provider": provider,
+        "amount": amount,
+        "currency": currency,
+        "device": device_name,
+        "retrieval_request_id": retrieval_request.get("id"),
+        "payment_kind": payment_transaction.get("payment_kind"),
+        "reference": payment_transaction.get("checkout_reference"),
+        "session_id": payment_transaction.get("checkout_reference"),
+        "transaction_id": payment_transaction.get("id"),
+    }
     success_query = urlencode(
         {
-            "provider": provider,
-            "amount": amount,
-            "currency": currency,
-            "device": device_name,
-            "retrieval_request_id": retrieval_request.get("id"),
-            "payment_kind": payment_transaction.get("payment_kind"),
-            "reference": payment_transaction.get("checkout_reference"),
-            "session_id": payment_transaction.get("checkout_reference"),
+            **common_query,
+            "demo_intent": "approve",
         }
     )
     cancel_query = urlencode(
         {
-            "provider": provider,
-            "amount": amount,
-            "currency": currency,
-            "device": device_name,
-            "retrieval_request_id": retrieval_request.get("id"),
-            "payment_kind": payment_transaction.get("payment_kind"),
-            "reference": payment_transaction.get("checkout_reference"),
+            **common_query,
+            "demo_intent": "cancel",
         }
     )
 
     provider_configured = _payment_provider_configured(provider)
+    demo_checkout_url = f"{_frontend_url()}/app/payment/demo"
     return {
         "provider": provider,
         "payment_kind": payment_transaction.get("payment_kind"),
@@ -125,11 +128,108 @@ def _build_checkout_payload(retrieval_request, payment_transaction):
         "checkout_reference": payment_transaction.get("checkout_reference"),
         "amount": amount,
         "currency": currency,
-        "integration_mode": "provider" if provider_configured else "stub",
+        "integration_mode": "demo_sandbox",
         "provider_configured": provider_configured,
-        "success_url": f"{_frontend_url()}/app/payment/success?{success_query}",
-        "cancel_url": f"{_frontend_url()}/app/payment/cancel?{cancel_query}",
+        "is_demo": True,
+        "demo_notice": "Demo only, no real payment will be taken.",
+        "success_url": f"{demo_checkout_url}?{success_query}",
+        "cancel_url": f"{demo_checkout_url}?{cancel_query}",
     }
+
+
+def _build_demo_cloud_archive(download, retrieval_request):
+    device = retrieval_request.get("device") or {}
+    token = download.get("token") or "demo-token"
+    retrieval_request_id = retrieval_request.get("id") or download.get("retrieval_request_id")
+    device_name = device.get("name") or f"retrieval-{retrieval_request_id}"
+    safe_name = "".join(ch.lower() if ch.isalnum() else "-" for ch in device_name).strip("-") or "device"
+    storage_key = f"demo-cloud/retrieval-{retrieval_request_id}/{token[:12]}"
+
+    return {
+        "mode": "demo",
+        "provider": "eWaste Hub Demo Cloud",
+        "storage_key": storage_key,
+        "storage_region": "uk-demo-1",
+        "device": {
+            "id": device.get("id"),
+            "name": device_name,
+            "type": device.get("device_type"),
+            "classification": device.get("classification"),
+            "condition": device.get("condition"),
+        },
+        "retention": {
+            "starts_at": retrieval_request.get("storage_expires_at") or retrieval_request.get("created_at"),
+            "free_access_until": retrieval_request.get("storage_expires_at"),
+            "extended_until": retrieval_request.get("extended_until"),
+            "deletion_due_at": retrieval_request.get("deletion_due_at"),
+            "policy": "3 months included, optional extension to 6 months, then locked or deleted by lifecycle maintenance.",
+        },
+        "file_manifest": [
+            {
+                "filename": f"{safe_name}-photos.zip",
+                "content_type": "application/zip",
+                "size_label": "demo 42 MB",
+                "checksum": f"demo-sha256-{token[:16]}",
+            },
+            {
+                "filename": f"{safe_name}-contacts.csv",
+                "content_type": "text/csv",
+                "size_label": "demo 2 MB",
+                "checksum": f"demo-sha256-{token[-16:]}",
+            },
+            {
+                "filename": f"{safe_name}-wipe-guarantee.txt",
+                "content_type": "text/plain",
+                "size_label": "demo 4 KB",
+                "checksum": "demo-only",
+            },
+        ],
+        "wipe_guarantee_note": (
+            "Demo archive: partner processing includes a secure data-wiping guarantee before resale, "
+            "reuse, or disposal. No real customer files are stored in this demo package."
+        ),
+    }
+
+
+def _send_demo_download_delivery_notice(retrieval_request, download_payload):
+    user_id = retrieval_request.get("consumer_id")
+    device_name = ((retrieval_request.get("device") or {}).get("name")) or "your device"
+    target_path = "/app/security-vault"
+
+    create_notification(
+        user_id=user_id,
+        kind="vault",
+        severity="success",
+        title="Data retrieval complete",
+        body=f"Your demo cloud archive for {device_name} is ready. The secure link expires in 24 hours.",
+        target_path=target_path,
+    )
+
+    consumer = retrieval_request.get("consumer") or {}
+    to_email = _s(consumer.get("email"))
+    current_app.logger.info(
+        "Demo email sent for retrieval_request=%s token=%s mode=notification",
+        retrieval_request.get("id"),
+        (download_payload.get("token") or "")[:12],
+    )
+    if not to_email:
+        return
+
+    text_body = (
+        f"Hello,\n\nYour eWaste Hub demo cloud archive for {device_name} is ready.\n\n"
+        f"Open the Security Vault to download it within 24 hours: {_frontend_url()}{target_path}\n\n"
+        "Demo only: no real cloud storage or customer files are used.\n\n"
+        "eWaste Hub"
+    )
+    try:
+        send_transactional_email(
+            to_email=to_email,
+            subject="Your eWaste Hub demo cloud archive is ready",
+            text_body=text_body,
+            html_body=None,
+        )
+    except EmailDeliveryError:
+        current_app.logger.warning("Configured SMTP failed for retrieval_request=%s", retrieval_request.get("id"))
 
 
 def _authorized_retrieval_request(retrieval_request_id: int, *, allow_staff: bool = True):
@@ -247,6 +347,14 @@ def create_retrieval_request():
         note=note,
         retrieval_status="pending",
         payment_status="unpaid",
+    )
+    create_notification(
+        user_id=user_id,
+        kind="vault",
+        severity="info",
+        title="Data retrieval request created",
+        body=f"Security Vault checkout is ready for {device.get('name') or 'your device'}.",
+        target_path="/app/security-vault",
     )
 
     return jsonify({"message": "created", "retrieval_request": _serialize_retrieval_request(retrieval_request)}), 201
@@ -432,8 +540,10 @@ def issue_download_link(retrieval_request_id: int):
     download = issue_data_retrieval_download(retrieval_request_id, issued_by=int(get_jwt_identity()))
     if not download:
         return jsonify({"error": "retrieval request is not ready for download"}), 409
+    download_payload = _serialize_download(download)
+    _send_demo_download_delivery_notice(download_payload.get("retrieval_request") or retrieval_request, download_payload)
 
-    return jsonify({"message": "issued", "download": _serialize_download(download)}), 201
+    return jsonify({"message": "issued", "download": download_payload}), 201
 
 
 @retrieval_download_bp.get("/<string:token>")
@@ -456,6 +566,7 @@ def access_retrieval_download(token: str):
 
     download = result["download"]
     retrieval_request = download.get("retrieval_request") or {}
+    demo_cloud_archive = _build_demo_cloud_archive(download, retrieval_request)
     return jsonify(
         {
             "download": {
@@ -473,9 +584,14 @@ def access_retrieval_download(token: str):
                 "note": retrieval_request.get("note"),
                 "issued_at": download.get("issued_at"),
                 "expires_at": download.get("expires_at"),
+                "demo_cloud_archive": demo_cloud_archive,
                 "content": {
                     "kind": "retrieved-data-package",
                     "message": "Secure retrieval content is ready.",
+                    "demo_cloud_provider": demo_cloud_archive["provider"],
+                    "storage_key": demo_cloud_archive["storage_key"],
+                    "file_manifest": demo_cloud_archive["file_manifest"],
+                    "wipe_guarantee_note": demo_cloud_archive["wipe_guarantee_note"],
                 },
             }
         }

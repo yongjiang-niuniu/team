@@ -20,9 +20,16 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import api from '../../api/axios';
 import { PaymentSummaryCard } from '../components/PaymentSummaryCard';
+import { ReferralQrDialog } from '../components/ReferralQrDialog';
 import { getApiStyleErrorMessage } from '../lib/httpErrors';
 import { type PaymentSummary } from '../lib/payment';
-import { formatPreferredMethodLabel, formatRequestStatusLabel, type PortalRequest } from '../lib/userPortal';
+import {
+  formatPreferredMethodLabel,
+  formatRequestStatusLabel,
+  issueReferralCode,
+  type PortalRequest,
+  type ReferralCode,
+} from '../lib/userPortal';
 
 const CATEGORIES = [
   { id: 'phone', icon: Smartphone, label: 'Smartphone' },
@@ -81,6 +88,8 @@ export function NewRequestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [submittedRequest, setSubmittedRequest] = useState<PortalRequest | null>(null);
+  const [isIssuingReferral, setIsIssuingReferral] = useState(false);
+  const [selectedReferral, setSelectedReferral] = useState<ReferralCode | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -116,7 +125,31 @@ export function NewRequestPage() {
     setIsSubmitted(false);
     setErrorMessage('');
     setSubmittedRequest(null);
+    setSelectedReferral(null);
     setFormData(DEFAULT_FORM);
+  };
+
+  const handleGetQrCode = async () => {
+    const deviceId = submittedRequest?.device?.id;
+    const requestId = submittedRequest?.id;
+    if (!deviceId || !requestId) {
+      setErrorMessage('The request must finish saving before a QR voucher can be issued.');
+      return;
+    }
+
+    setIsIssuingReferral(true);
+    setErrorMessage('');
+    try {
+      const referral = await issueReferralCode({
+        device_id: deviceId,
+        request_id: requestId,
+      });
+      setSelectedReferral(referral);
+    } catch (error: unknown) {
+      setErrorMessage(getApiStyleErrorMessage(error, 'Could not issue a QR voucher right now.'));
+    } finally {
+      setIsIssuingReferral(false);
+    }
   };
 
   if (isSubmitted) {
@@ -132,11 +165,18 @@ export function NewRequestPage() {
       quotedPrice: formData.paidRetrieval ? 10 : null,
       finalPrice: classification === 'Recycle' && formData.paidRetrieval ? 10 : null,
       note: formData.paidRetrieval
-        ? 'Payment UI is now prepared on the front end. Backend provider, reference, and paid-at fields can plug into this summary later.'
+        ? 'Security Vault checkout is available for this retrieval request.'
         : 'No paid retrieval option was selected for this request.',
     };
+    const cexEstimateUrl = `https://uk.webuy.com/search?stext=${encodeURIComponent(submittedDeviceName)}`;
+    const rareMarketplaceUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(submittedDeviceName)}`;
     return (
       <div className="max-w-2xl mx-auto pb-10">
+        {errorMessage && (
+          <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-semibold text-red-600">
+            {errorMessage}
+          </div>
+        )}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -165,15 +205,34 @@ export function NewRequestPage() {
             {classification === 'Current' && (
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Trade-in Ready</h3>
-                <p className="text-slate-500 font-medium text-sm mb-6">Take your device to a partner store to get your estimated value.</p>
+                <p className="text-slate-500 font-medium text-sm mb-4">
+                  Demo estimate: GBP 120-220 through CeX UK, with local hand-in and partner data-wiping guarantee.
+                </p>
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {['CeX Sheffield High Street', 'CeX Meadowhall', 'CeX Leeds Headrow'].map((location) => (
+                    <span key={location} className="rounded-full border border-emerald-100 bg-white px-3 py-1 text-xs font-bold text-emerald-700">
+                      {location}
+                    </span>
+                  ))}
+                </div>
 
                 <div className="flex flex-col gap-4">
-                  <button className="flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md shadow-emerald-600/20">
+                  <button
+                    type="button"
+                    onClick={() => void handleGetQrCode()}
+                    disabled={isIssuingReferral}
+                    className="flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-md shadow-emerald-600/20"
+                  >
                     <QrCode className="w-5 h-5" />
-                    Get QR Code
+                    {isIssuingReferral ? 'Issuing QR Code...' : 'Get QR Code'}
                   </button>
 
-                  <a href="#" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700 text-sm font-bold transition-colors underline underline-offset-4 decoration-slate-300">
+                  <a
+                    href={cexEstimateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700 text-sm font-bold transition-colors underline underline-offset-4 decoration-slate-300"
+                  >
                     View estimated value on CeX
                     <ExternalLink className="w-4 h-4" />
                   </a>
@@ -186,7 +245,7 @@ export function NewRequestPage() {
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-slate-900">Data Retrieval Service</h3>
-                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-black rounded-lg">Fee: £10.00</span>
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-black rounded-lg">Fee: GBP 10.00</span>
                 </div>
                 <p className="text-slate-500 font-medium text-sm mb-6">Files will be hosted for 3 months after ethical disposal.</p>
 
@@ -206,13 +265,40 @@ export function NewRequestPage() {
               </div>
             )}
 
-            {(classification === 'Rare' || classification === 'Unknown') && (
+            {classification === 'Rare' && (
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Marketplace Referral</h3>
+                <p className="text-slate-500 font-medium text-sm mb-6">
+                  Demo guidance: GBP 80-300 collector range through eBay UK and Collector Network. Generate a QR voucher so staff can track referral fee activity.
+                </p>
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onClick={() => void handleGetQrCode()}
+                    disabled={isIssuingReferral}
+                    className="flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-md shadow-emerald-600/20"
+                  >
+                    <QrCode className="w-5 h-5" />
+                    {isIssuingReferral ? 'Issuing QR Voucher...' : 'Get Marketplace QR Voucher'}
+                  </button>
+                  <a
+                    href={rareMarketplaceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700 text-sm font-bold transition-colors underline underline-offset-4 decoration-slate-300"
+                  >
+                    View demo collector guidance
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {classification === 'Unknown' && (
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Awaiting Assessment</h3>
                 <p className="text-slate-500 font-medium text-sm">
-                  {classification === 'Rare'
-                    ? 'Our specialists will appraise your collectable item and contact you with an offer.'
-                    : 'Our team will identify the device upon arrival to determine the best course of action.'}
+                  Our team will identify the device upon arrival to determine the best course of action.
                 </p>
               </div>
             )}
@@ -225,6 +311,7 @@ export function NewRequestPage() {
             </button>
           </div>
         </motion.div>
+        <ReferralQrDialog referral={selectedReferral} onClose={() => setSelectedReferral(null)} />
       </div>
     );
   }
@@ -498,7 +585,7 @@ export function NewRequestPage() {
                       exit={{ opacity: 0, y: -10, height: 0 }}
                       className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-600 overflow-hidden"
                     >
-                      Extract and host my files in the cloud for 3 months. Fee: £10.00 (Payable after evaluation)
+                      Extract and host my files in the cloud for 3 months. Fee: GBP 10.00 (Payable after evaluation)
                     </motion.div>
                   )}
                 </AnimatePresence>

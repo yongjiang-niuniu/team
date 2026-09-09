@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import requests
 from flask import Blueprint, request, jsonify, current_app, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from DBupdate.db_bridge import create_user, get_user_by_email
+from ..email_delivery import EmailDeliveryError, send_password_reset_email
 from ..extensions import db
 from ..models import PasswordResetToken, User
 
@@ -17,14 +17,24 @@ DEFAULT_GITHUB_REDIRECT_URI = "http://127.0.0.1:5050/api/auth/github/callback"
 DEFAULT_APP_REDIRECT = "/app/new-request"
 DEFAULT_PASSWORD_RESET_PATH = "/reset-password"
 PASSWORD_RESET_EXPIRY_MINUTES = 30
+MIN_PASSWORD_LENGTH = 8
 LOCAL_AUTH_PROVIDER = "local"
 GOOGLE_AUTH_PROVIDER = "google"
+GITHUB_AUTH_PROVIDER = "github"
 GITHUB_STATE_SESSION_KEY = "github_oauth_state"
 GITHUB_NEXT_SESSION_KEY = "github_oauth_next"
+GITHUB_FRONTEND_ORIGIN_SESSION_KEY = "github_oauth_frontend_origin"
+GITHUB_REDIRECT_URI_SESSION_KEY = "github_oauth_redirect_uri"
 GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITHUB_USER_URL = "https://api.github.com/user"
 GITHUB_EMAILS_URL = "https://api.github.com/user/emails"
+PUBLIC_DEMO_HOST_SUFFIXES = (
+    ".ngrok-free.app",
+    ".ngrok-free.dev",
+    ".ngrok.app",
+    ".ngrok.io",
+)
 
 
 def _get_json():
@@ -71,8 +81,9 @@ def _sanitize_next_path(next_path):
     return candidate
 
 
-def _redirect_to_frontend(path, *, query=None, fragment=None):
-    target = f"{_get_frontend_url()}{path}"
+def _redirect_to_frontend(path, *, query=None, fragment=None, frontend_url=None):
+    target_origin = (frontend_url or _get_frontend_url()).rstrip("/")
+    target = f"{target_origin}{path}"
     if query:
         target = f"{target}?{urlencode(query)}"
     if fragment:
@@ -80,8 +91,8 @@ def _redirect_to_frontend(path, *, query=None, fragment=None):
     return redirect(target)
 
 
-def _redirect_to_login_error(message):
-    return _redirect_to_frontend("/auth/login", query={"oauth_error": message})
+def _redirect_to_login_error(message, *, frontend_url=None):
+    return _redirect_to_frontend("/auth/login", query={"oauth_error": message}, frontend_url=frontend_url)
 
 
 def _build_password_reset_link(token):
@@ -97,6 +108,10 @@ def _forgot_password_success_response(reset_token=None):
 
 def _reset_password_error(message, status_code=400):
     return jsonify({"error": message}), status_code
+
+
+def _password_too_short(password):
+    return len(password) < MIN_PASSWORD_LENGTH
 
 
 def _auth_conflict(message):
@@ -116,6 +131,36 @@ def _get_github_config():
         raise RuntimeError("GitHub sign-in is not configured yet.")
 
     return client_id, client_secret, redirect_uri
+
+
+def _normalize_oauth_public_origin(origin):
+    candidate = (origin or "").strip().rstrip("/")
+    if not candidate:
+        return ""
+
+    try:
+        parsed = urlparse(candidate)
+        port = parsed.port
+    except ValueError:
+        return ""
+
+    if parsed.scheme not in {"http", "https"}:
+        return ""
+    if parsed.username or parsed.password:
+        return ""
+    if parsed.path not in {"", "/"} or parsed.params or parsed.query or parsed.fragment:
+        return ""
+
+    hostname = (parsed.hostname or "").lower()
+    is_local = hostname in {"127.0.0.1", "localhost"}
+    is_public_demo = parsed.scheme == "https" and hostname.endswith(PUBLIC_DEMO_HOST_SUFFIXES)
+    if not (is_local or is_public_demo):
+        return ""
+
+    netloc = hostname
+    if port is not None:
+        netloc = f"{netloc}:{port}"
+    return f"{parsed.scheme}://{netloc}"
 
 
 def _github_api_headers(access_token):
@@ -193,15 +238,23 @@ def _verify_google_credential(credential):
 
 @auth_bp.get("/github/login")
 def github_login():
+    frontend_origin = _normalize_oauth_public_origin(request.args.get("public_origin"))
+
     try:
         client_id, _, redirect_uri = _get_github_config()
     except RuntimeError as exc:
-        return _redirect_to_login_error(str(exc))
+        return _redirect_to_login_error(str(exc), frontend_url=frontend_origin)
+
+    if frontend_origin:
+        redirect_uri = f"{frontend_origin}/api/auth/github/callback"
 
     next_path = _sanitize_next_path(request.args.get("next"))
     state = token_urlsafe(32)
     session[GITHUB_STATE_SESSION_KEY] = state
     session[GITHUB_NEXT_SESSION_KEY] = next_path
+    if frontend_origin:
+        session[GITHUB_FRONTEND_ORIGIN_SESSION_KEY] = frontend_origin
+        session[GITHUB_REDIRECT_URI_SESSION_KEY] = redirect_uri
 
     return redirect(
         f"{GITHUB_AUTHORIZE_URL}?{urlencode({
@@ -218,6 +271,8 @@ def github_login():
 def github_callback():
     next_path = _sanitize_next_path(session.pop(GITHUB_NEXT_SESSION_KEY, DEFAULT_APP_REDIRECT))
     expected_state = session.pop(GITHUB_STATE_SESSION_KEY, "")
+    frontend_origin = session.pop(GITHUB_FRONTEND_ORIGIN_SESSION_KEY, "")
+    session_redirect_uri = session.pop(GITHUB_REDIRECT_URI_SESSION_KEY, "")
     state = (request.args.get("state") or "").strip()
     code = (request.args.get("code") or "").strip()
     github_error = (request.args.get("error") or "").strip()
@@ -225,16 +280,17 @@ def github_callback():
 
     if github_error:
         message = github_error_description or "GitHub sign-in was cancelled or denied."
-        return _redirect_to_login_error(message)
+        return _redirect_to_login_error(message, frontend_url=frontend_origin)
 
     if not expected_state or not state or state != expected_state:
-        return _redirect_to_login_error("GitHub sign-in session expired. Please try again.")
+        return _redirect_to_login_error("GitHub sign-in session expired. Please try again.", frontend_url=frontend_origin)
 
     if not code:
-        return _redirect_to_login_error("GitHub sign-in did not return an authorization code.")
+        return _redirect_to_login_error("GitHub sign-in did not return an authorization code.", frontend_url=frontend_origin)
 
     try:
-        client_id, client_secret, redirect_uri = _get_github_config()
+        client_id, client_secret, configured_redirect_uri = _get_github_config()
+        redirect_uri = session_redirect_uri or configured_redirect_uri
         token_response = requests.post(
             GITHUB_TOKEN_URL,
             headers={
@@ -267,27 +323,37 @@ def github_callback():
         github_profile = profile_response.json()
         email = _get_verified_github_email(github_access_token)
     except ValueError as exc:
-        return _redirect_to_login_error(str(exc))
+        return _redirect_to_login_error(str(exc), frontend_url=frontend_origin)
     except requests.RequestException as exc:
         current_app.logger.exception("GitHub OAuth request failed")
-        return _redirect_to_login_error("GitHub sign-in is temporarily unavailable. Please try again.")
+        return _redirect_to_login_error(
+            "GitHub sign-in is temporarily unavailable. Please try again.",
+            frontend_url=frontend_origin,
+        )
     except RuntimeError as exc:
-        return _redirect_to_login_error(str(exc))
+        return _redirect_to_login_error(str(exc), frontend_url=frontend_origin)
 
     if not email:
-        return _redirect_to_login_error("GitHub account email is unavailable or not verified.")
+        return _redirect_to_login_error(
+            "GitHub account email is unavailable or not verified.",
+            frontend_url=frontend_origin,
+        )
 
-    user = get_user_by_email(email)
+    user = db.session.query(User).filter_by(email=email).one_or_none()
     if not user:
-        create_user(
+        user = User(
             email=email,
+            auth_provider=GITHUB_AUTH_PROVIDER,
+            full_name=(github_profile.get("name") or github_profile.get("login") or "").strip() or None,
             password_hash=generate_password_hash(f"github-oauth:{github_profile.get('id', email)}"),
             role="consumer",
         )
-        user = get_user_by_email(email)
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
 
     if not user:
-        return _redirect_to_login_error("Unable to complete GitHub sign-in.")
+        return _redirect_to_login_error("Unable to complete GitHub sign-in.", frontend_url=frontend_origin)
 
     payload = _build_auth_payload(user)
     return _redirect_to_frontend(
@@ -296,6 +362,7 @@ def github_callback():
             "access_token": payload["access_token"],
             "next": next_path,
         },
+        frontend_url=frontend_origin,
     )
 
 
@@ -308,6 +375,8 @@ def register():
 
     if not email or not password:
         return jsonify({"error": "email and password are required"}), 400
+    if _password_too_short(password):
+        return jsonify({"error": f"password must be at least {MIN_PASSWORD_LENGTH} characters"}), 400
 
     existing_user = db.session.query(User).filter_by(email=email).one_or_none()
     if existing_user:
@@ -359,6 +428,8 @@ def forgot_password():
     user = db.session.query(User).filter_by(email=email).one_or_none()
     if user is None:
         return _forgot_password_success_response()
+    if user.auth_provider != LOCAL_AUTH_PROVIDER:
+        return _forgot_password_success_response()
 
     now = datetime.utcnow()
     reset_token = token_urlsafe(32)
@@ -373,7 +444,21 @@ def forgot_password():
     db.session.add(token_record)
     db.session.commit()
 
-    if current_app.debug or current_app.testing:
+    try:
+        send_password_reset_email(
+            to_email=email,
+            reset_link=reset_link,
+            expires_minutes=PASSWORD_RESET_EXPIRY_MINUTES,
+        )
+    except EmailDeliveryError:
+        current_app.logger.exception("Password reset email delivery failed for %s", email)
+        return jsonify({"error": "Unable to send password reset email right now. Please try again later."}), 503
+
+    if (
+        current_app.debug
+        or current_app.testing
+        or (current_app.config.get("APP_ENV") or "").strip().lower() != "production"
+    ):
         current_app.logger.info("Password reset link for %s: %s", email, reset_link)
 
     return _forgot_password_success_response()
@@ -390,6 +475,8 @@ def reset_password():
         return _reset_password_error("token is required")
     if not new_password:
         return _reset_password_error("new_password is required")
+    if _password_too_short(new_password):
+        return _reset_password_error(f"new_password must be at least {MIN_PASSWORD_LENGTH} characters")
     if not confirm_password:
         return _reset_password_error("confirm_password is required")
     if new_password != confirm_password:
@@ -426,8 +513,8 @@ def change_password():
         return _change_password_error("current_password is required")
     if not new_password:
         return _change_password_error("new_password is required")
-    if len(new_password) < 8:
-        return _change_password_error("new_password must be at least 8 characters")
+    if _password_too_short(new_password):
+        return _change_password_error(f"new_password must be at least {MIN_PASSWORD_LENGTH} characters")
     if not confirm_password:
         return _change_password_error("confirm_password is required")
     if new_password != confirm_password:

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import {
+  CheckCircle2,
   Clock,
   CreditCard,
   Download,
@@ -8,6 +9,7 @@ import {
   Lock,
   ShieldCheck,
   ShieldOff,
+  Smartphone,
 } from 'lucide-react';
 import { PaymentSummaryCard } from '../components/PaymentSummaryCard';
 import { getApiStyleErrorMessage } from '../lib/httpErrors';
@@ -25,6 +27,7 @@ import {
   fetchMyDevices,
   downloadVaultArchivePackage,
   fetchMyVaultArchives,
+  formatDeviceTypeLabel,
   type PortalDevice,
   type VaultArchive,
 } from '../lib/userPortal';
@@ -80,6 +83,57 @@ function formatRetrievalStageLabel(value?: string | null): string {
       return 'Deleted';
     default:
       return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : 'Pending';
+  }
+}
+
+function formatDeviceName(device: PortalDevice): string {
+  const fallback = formatDeviceTypeLabel(device.device_type);
+  const rawName = (device.name || fallback).trim();
+  const normalizedName = rawName
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s*#\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return normalizedName
+    .split(' ')
+    .map((part) => {
+      if (/^iphone$/i.test(part)) return 'iPhone';
+      if (/^ipad$/i.test(part)) return 'iPad';
+      if (/^macbook$/i.test(part)) return 'MacBook';
+      return part ? part.charAt(0).toUpperCase() + part.slice(1) : part;
+    })
+    .join(' ');
+}
+
+function formatConditionLabel(condition?: string | null): string {
+  const normalized = (condition || '').trim().toLowerCase();
+  switch (normalized) {
+    case 'new':
+      return 'New condition';
+    case 'good':
+      return 'Good condition';
+    case 'fair':
+      return 'Fair condition';
+    case 'poor':
+      return 'Needs repair';
+    case 'broken':
+      return 'Not working';
+    default:
+      return 'Condition to be checked';
+  }
+}
+
+function formatClassificationHint(classification?: string | null): string {
+  switch ((classification || '').trim().toLowerCase()) {
+    case 'current':
+      return 'Current model';
+    case 'rare':
+      return 'May have resale value';
+    case 'recycle':
+      return 'Ready for recycling';
+    default:
+      return 'Awaiting review';
   }
 }
 
@@ -390,7 +444,7 @@ export function SecurityVaultPage() {
             <PaymentSummaryCard
               summary={paymentSummary}
               title="Payment Status"
-              subtitle="This card now reads the live retrieval payment fields returned by the backend."
+              subtitle="Payment and retention details will stay up to date as your archive is prepared."
             />
           </div>
         </div>
@@ -455,13 +509,13 @@ export function SecurityVaultPage() {
                   href={checkoutDraft.checkout.success_url}
                   className="rounded-xl bg-emerald-600 px-3 py-2 text-center font-bold text-white hover:bg-emerald-500"
                 >
-                  Complete Demo Payment
+                  Continue Payment
                 </a>
                 <a
                   href={checkoutDraft.checkout.cancel_url}
                   className="rounded-xl bg-white px-3 py-2 text-center font-bold text-slate-700 hover:bg-slate-50"
                 >
-                  Cancel Flow
+                  Cancel Payment
                 </a>
               </div>
             </div>
@@ -550,7 +604,7 @@ export function SecurityVaultPage() {
         <PaymentSummaryCard
           summary={paymentSummary}
           title="Retrieval Status"
-          subtitle="This panel now reads the live retrieval request list from /api/retrieval-requests/mine."
+          subtitle="Payment details will appear here once a checkout is started."
         />
 
         <button
@@ -585,7 +639,7 @@ export function SecurityVaultPage() {
               </button>
             </div>
             <p className="text-xs font-medium text-slate-500">
-              These buttons now post to <code>/api/retrieval-requests/{request.id}/checkout</code>.
+              Choose a payment option to continue preparing this archive.
             </p>
           </div>
         ) : null}
@@ -601,13 +655,13 @@ export function SecurityVaultPage() {
                 href={checkoutDraft.checkout.success_url}
                 className="rounded-xl bg-emerald-600 px-3 py-2 text-center font-bold text-white hover:bg-emerald-500"
               >
-                Complete Demo Payment
+                Continue Payment
               </a>
               <a
                 href={checkoutDraft.checkout.cancel_url}
                 className="rounded-xl bg-white px-3 py-2 text-center font-bold text-slate-700 hover:bg-slate-50"
               >
-                Cancel Flow
+                Cancel Payment
               </a>
             </div>
           </div>
@@ -627,56 +681,121 @@ export function SecurityVaultPage() {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Security Vault</h1>
           </div>
           <p className="text-slate-500 font-medium text-lg max-w-2xl">
-            Start retrieval checkout, track retention dates, and securely download your archive once staff release it.
+            Request a secure archive, follow its retention dates, and download it once the team releases it.
           </p>
         </div>
       </div>
 
       {!isLoading ? (
         <section className="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">New Retrieval</p>
-              <h2 className="text-2xl font-black text-slate-900">Create Retrieval Request</h2>
-              <p className="mt-2 text-slate-500 font-medium">
-                This form now posts directly to <code>/api/retrieval-requests</code> for one of your owned devices.
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">New Archive Request</p>
+              <h2 className="text-2xl font-black text-slate-900">Request Your Secure Archive</h2>
+              <p className="mt-3 text-slate-500 font-medium leading-relaxed">
+                Choose the device whose saved data you want returned. The team will prepare the archive and keep you updated here.
               </p>
+
+              <div className="mt-6 rounded-[2rem] border border-emerald-100 bg-emerald-50/60 px-5 py-5">
+                <p className="text-xs font-black uppercase tracking-widest text-emerald-700">What Happens Next</p>
+                <div className="mt-4 space-y-3 text-sm font-medium text-slate-600">
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <p>Staff confirm the device and prepare the archive.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <p>You complete payment if it is required for this retrieval.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <p>Your secure download appears in the vault when it is ready.</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="w-full lg:max-w-2xl space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="block">
-                  <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400">Device</span>
-                  <select
-                    value={newRetrievalDeviceId}
-                    onChange={(event) => setNewRetrievalDeviceId(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-400"
-                    disabled={creatingRetrieval || devices.length === 0}
-                  >
-                    {devices.length === 0 ? <option value="">No owned devices available</option> : null}
-                    {devices.map((device) => (
-                      <option key={device.id} value={device.id}>
-                        {device.name} #{device.id} · {device.classification}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+            <div className="space-y-5">
+              <fieldset className="space-y-3" disabled={creatingRetrieval}>
+                <legend className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400">
+                  Choose a Device
+                </legend>
 
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">How It Works</p>
-                  <p className="mt-2 text-sm font-medium text-slate-600">
-                    Choose your device, add an optional note, and the backend will create a live retrieval request record.
-                  </p>
-                </div>
+                {devices.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-5 text-sm font-medium text-slate-500">
+                    No devices are available for archive retrieval yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {devices.map((device) => {
+                      const isSelected = String(device.id) === newRetrievalDeviceId;
+
+                      return (
+                        <button
+                          key={device.id}
+                          type="button"
+                          onClick={() => setNewRetrievalDeviceId(String(device.id))}
+                          aria-pressed={isSelected}
+                          className={`group flex min-h-28 w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all ${
+                            isSelected
+                              ? 'border-emerald-300 bg-emerald-50 shadow-sm ring-4 ring-emerald-500/10'
+                              : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/40'
+                          } disabled:cursor-not-allowed disabled:opacity-60`}
+                          disabled={creatingRetrieval}
+                        >
+                          <span
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                              isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            <Smartphone className="h-5 w-5" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-black text-slate-900">
+                              {formatDeviceName(device)}
+                            </span>
+                            <span className="mt-1 block text-xs font-medium text-slate-500">
+                              {formatDeviceTypeLabel(device.device_type)} - {formatConditionLabel(device.condition)}
+                            </span>
+                            <span className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600">
+                                {formatClassificationHint(device.classification)}
+                              </span>
+                              {isSelected ? (
+                                <span className="rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                                  Selected
+                                </span>
+                              ) : null}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </fieldset>
+
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400">Selected Device</p>
+                <p className="mt-2 text-sm font-medium text-slate-600">
+                  {(() => {
+                    const selectedDevice = devices.find((device) => String(device.id) === newRetrievalDeviceId);
+                    return selectedDevice
+                      ? `${formatDeviceName(selectedDevice)} is listed as ${formatClassificationHint(
+                          selectedDevice.classification,
+                        ).toLowerCase()}.`
+                      : 'Choose a device above to continue.';
+                  })()}
+                </p>
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400">Note</span>
+                <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400">Note For Staff</span>
                 <textarea
                   value={newRetrievalNote}
                   onChange={(event) => setNewRetrievalNote(event.target.value)}
                   rows={3}
-                  placeholder="Optional note for staff or archive handling."
+                  placeholder="Add anything staff should know before preparing your archive."
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-400"
                   disabled={creatingRetrieval}
                 />
@@ -689,10 +808,10 @@ export function SecurityVaultPage() {
                   disabled={creatingRetrieval || devices.length === 0}
                   className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
                 >
-                  {creatingRetrieval ? 'Creating Retrieval...' : 'Create Retrieval Request'}
+                  {creatingRetrieval ? 'Sending Request...' : 'Request Archive'}
                 </button>
                 <p className="text-sm font-medium text-slate-500">
-                  Available devices: <span className="font-black text-slate-700">{devices.length}</span>
+                  {devices.length === 1 ? '1 device available' : `${devices.length} devices available`}
                 </p>
               </div>
             </div>
@@ -703,8 +822,8 @@ export function SecurityVaultPage() {
       {!isLoading && retrievalRequestCards.length > 0 ? (
         <section className="space-y-5">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">My Retrievals</p>
-            <h2 className="text-2xl font-black text-slate-900">Retrieval Requests</h2>
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">My Archives</p>
+            <h2 className="text-2xl font-black text-slate-900">Archive Requests</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">{retrievalRequestCards}</div>
 
@@ -793,8 +912,8 @@ export function SecurityVaultPage() {
                       }
                     : null,
                 })}
-                title="Live Retrieval Detail"
-                subtitle="This panel reads the live detail payload from /api/retrieval-requests/:id."
+                title="Retrieval Detail"
+                subtitle="The latest payment and archive readiness information for this request."
               />
             </div>
           ) : null}

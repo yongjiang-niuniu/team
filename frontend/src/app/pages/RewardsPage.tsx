@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { ExternalLink, Gift, QrCode, ShieldCheck, Store, Tags } from 'lucide-react';
+import { CheckCircle2, Download, ExternalLink, FileText, Gift, Loader2, ShieldCheck, Store, Tags } from 'lucide-react';
 import { getApiStyleErrorMessage } from '../lib/httpErrors';
+import {
+  buildReferralLandingUrl,
+  createReferralQrDataUrl,
+  downloadReferralVoucherPdf,
+} from '../lib/rewardDocuments';
+import { getReferralCredentialUrl } from '../lib/referrals';
 import {
   fetchReferralDetail,
   fetchReferralByCode,
@@ -40,6 +46,72 @@ function formatPartnerType(value: string | undefined): string {
   }
 }
 
+function formatRewardDate(value?: string | null): string {
+  if (!value) {
+    return 'Not available';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function isReferralTerminal(status: string | undefined): boolean {
+  return ['redeemed', 'handin_confirmed', 'resale_confirmed'].includes((status || '').trim().toLowerCase());
+}
+
+function ReferralQrImage({
+  referral,
+  voucher,
+  className,
+}: {
+  referral: ReferralCode | null | undefined;
+  voucher: RewardVoucher;
+  className?: string;
+}) {
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function renderQr() {
+      try {
+        const dataUrl = await createReferralQrDataUrl(referral, voucher);
+        if (!ignore) {
+          setQrDataUrl(dataUrl);
+        }
+      } catch {
+        if (!ignore) {
+          setQrDataUrl('');
+        }
+      }
+    }
+
+    void renderQr();
+
+    return () => {
+      ignore = true;
+    };
+  }, [referral, voucher]);
+
+  if (!qrDataUrl) {
+    return (
+      <div className={`${className || ''} flex items-center justify-center bg-slate-100 text-slate-400`}>
+        <Loader2 className="h-10 w-10 animate-spin" />
+      </div>
+    );
+  }
+
+  return <img src={qrDataUrl} alt={`QR code for ${voucher.code}`} className={className} />;
+}
+
 export function RewardsPage() {
   const [rewards, setRewards] = useState<RewardVoucher[]>([]);
   const [requests, setRequests] = useState<PortalRequest[]>([]);
@@ -48,12 +120,14 @@ export function RewardsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPartnerLoading, setIsPartnerLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const [partnerErrorMessage, setPartnerErrorMessage] = useState('');
   const [issuingPartnerId, setIssuingPartnerId] = useState<number | null>(null);
   const [selectedRequestByPartner, setSelectedRequestByPartner] = useState<Record<number, string>>({});
   const [issuedReferralByPartner, setIssuedReferralByPartner] = useState<Record<number, ReferralCode>>({});
   const [referralByVoucherCode, setReferralByVoucherCode] = useState<Record<string, ReferralCode>>({});
   const [actingReferralId, setActingReferralId] = useState<number | null>(null);
+  const [pdfDownloadingCode, setPdfDownloadingCode] = useState<string | null>(null);
   const [selectedReferralDetail, setSelectedReferralDetail] = useState<ReferralCode | null>(null);
   const [loadingReferralDetailId, setLoadingReferralDetailId] = useState<number | null>(null);
 
@@ -73,10 +147,23 @@ export function RewardsPage() {
           setIsLoading(false);
         }
 
-        const uniqueCodes = [...new Set(rewardItems.map((item) => item.code).filter(Boolean))];
+        const embeddedReferralByCode: Record<string, ReferralCode> = {};
+        rewardItems.forEach((item) => {
+          if (item.code && item.referral_code) {
+            embeddedReferralByCode[item.code] = item.referral_code;
+          }
+        });
+
+        const uniqueCodes = [
+          ...new Set(
+            rewardItems
+              .map((item) => item.code)
+              .filter((code) => Boolean(code) && !embeddedReferralByCode[code]),
+          ),
+        ];
         const detailResults = await Promise.allSettled(uniqueCodes.map((code) => fetchReferralByCode(code)));
         if (!ignore) {
-          const nextMap: Record<string, ReferralCode> = {};
+          const nextMap: Record<string, ReferralCode> = { ...embeddedReferralByCode };
           detailResults.forEach((result, index) => {
             if (result.status === 'fulfilled' && result.value) {
               nextMap[uniqueCodes[index]] = result.value;
@@ -148,6 +235,7 @@ export function RewardsPage() {
 
     setIssuingPartnerId(partner.id);
     setPartnerErrorMessage('');
+    setStatusMessage('');
     try {
       const referral = await issueReferralCode({
         partner_id: partner.id,
@@ -165,6 +253,7 @@ export function RewardsPage() {
         ...current,
         [referral.code]: referral,
       }));
+      setStatusMessage(`Referral code ${referral.code} is ready for ${partner.name}.`);
     } catch (error: unknown) {
       setPartnerErrorMessage(getApiStyleErrorMessage(error, 'Could not issue a referral code right now.'));
     } finally {
@@ -179,8 +268,10 @@ export function RewardsPage() {
       return;
     }
 
+    window.open(buildReferralLandingUrl(referral), '_blank', 'noopener,noreferrer');
     setActingReferralId(referral.id);
     setErrorMessage('');
+    setStatusMessage('');
     try {
       const updatedReferral = await recordReferralOpen(referral.id, {
         source: 'owner_rewards_page',
@@ -189,6 +280,10 @@ export function RewardsPage() {
         ...current,
         [voucherCode]: updatedReferral,
       }));
+      if (selectedReferralDetail?.id === updatedReferral.id) {
+        setSelectedReferralDetail(updatedReferral);
+      }
+      setStatusMessage(`Opened partner referral ${updatedReferral.code}.`);
     } catch (error: unknown) {
       setErrorMessage(getApiStyleErrorMessage(error, 'Could not record the referral open event right now.'));
     } finally {
@@ -205,6 +300,7 @@ export function RewardsPage() {
 
     setActingReferralId(referral.id);
     setErrorMessage('');
+    setStatusMessage('');
     try {
       const updatedReferral = await recordReferralRedeem(referral.id, {
         channel: 'owner_rewards_page',
@@ -213,6 +309,10 @@ export function RewardsPage() {
         ...current,
         [voucherCode]: updatedReferral,
       }));
+      if (selectedReferralDetail?.id === updatedReferral.id) {
+        setSelectedReferralDetail(updatedReferral);
+      }
+      setStatusMessage(`Referral ${updatedReferral.code} is marked as redeemed for partner hand-in.`);
     } catch (error: unknown) {
       setErrorMessage(getApiStyleErrorMessage(error, 'Could not redeem this referral right now.'));
     } finally {
@@ -239,6 +339,29 @@ export function RewardsPage() {
     }
   };
 
+  const handleDownloadPdf = async (voucher: RewardVoucher, referral: ReferralCode | null | undefined) => {
+    if (!referral) {
+      setErrorMessage('No referral record is linked to this voucher yet.');
+      return;
+    }
+
+    setPdfDownloadingCode(voucher.code);
+    setErrorMessage('');
+    setStatusMessage('');
+    try {
+      await downloadReferralVoucherPdf(voucher, referral);
+      setStatusMessage(`Downloaded demo PDF voucher for ${voucher.code}.`);
+    } catch (error: unknown) {
+      setErrorMessage(getApiStyleErrorMessage(error, 'Could not generate the demo PDF voucher right now.'));
+    } finally {
+      setPdfDownloadingCode(null);
+    }
+  };
+
+  const selectedReferralVoucher = selectedReferralDetail
+    ? rewards.find((voucher) => voucher.code === selectedReferralDetail.code)
+    : null;
+
   return (
     <div className="max-w-6xl mx-auto space-y-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -254,6 +377,13 @@ export function RewardsPage() {
           </p>
         </div>
       </div>
+
+      {statusMessage ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-emerald-700">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+          <p className="text-sm font-bold">{statusMessage}</p>
+        </div>
+      ) : null}
 
       <section className="space-y-5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -334,6 +464,33 @@ export function RewardsPage() {
                           {partner.referral_landing_url || partner.website_url || 'No landing page configured yet.'}
                         </p>
                       </div>
+
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+                        <p className="text-xs font-black uppercase tracking-widest text-emerald-700 mb-1">Demo Value Guidance</p>
+                        <p className="text-sm font-black text-slate-900">
+                          {partner.demo_estimated_value || 'Demo estimate pending'}
+                        </p>
+                        {partner.demo_value_source ? (
+                          <p className="mt-1 text-xs font-bold text-slate-500">{partner.demo_value_source}</p>
+                        ) : null}
+                        {partner.demo_hand_in_locations?.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {partner.demo_hand_in_locations.slice(0, 3).map((location) => (
+                              <span
+                                key={location}
+                                className="rounded-full border border-emerald-100 bg-white px-3 py-1 text-xs font-bold text-emerald-700"
+                              >
+                                {location}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        {partner.demo_wiping_guarantee ? (
+                          <p className="mt-3 text-xs font-semibold leading-relaxed text-slate-600">
+                            {partner.demo_wiping_guarantee}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
 
                     {eligibleRequestsForPartner(partner).length > 0 ? (
@@ -408,13 +565,13 @@ export function RewardsPage() {
                       ) : null}
                       {partner.referral_landing_url ? (
                         <a
-                          href={partner.referral_landing_url}
+                          href={partner.partner_detail_url || partner.referral_landing_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
                         >
                           <Tags className="w-4 h-4" />
-                          Referral Landing
+                          Partner Detail
                         </a>
                       ) : null}
                     </div>
@@ -464,8 +621,8 @@ export function RewardsPage() {
             const style = CARD_STYLES[index % CARD_STYLES.length];
             const linkedReferral = referralByVoucherCode[voucher.code];
             const referralStatus = (linkedReferral?.status || '').trim().toLowerCase();
-            const canOpen = Boolean(linkedReferral) && !['redeemed', 'handin_confirmed', 'resale_confirmed'].includes(referralStatus);
-            const canRedeem = Boolean(linkedReferral) && !['redeemed', 'handin_confirmed', 'resale_confirmed'].includes(referralStatus);
+            const canOpen = Boolean(linkedReferral) && !isReferralTerminal(referralStatus);
+            const canRedeem = Boolean(linkedReferral) && !isReferralTerminal(referralStatus);
             return (
               <motion.div
                 key={voucher.id}
@@ -503,13 +660,17 @@ export function RewardsPage() {
                       </p>
                     </div>
 
-                    <div className="relative p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 mb-8 group-hover:border-emerald-200 transition-colors shadow-sm">
+                    <div className="relative h-56 w-56 bg-white rounded-[2rem] border-2 border-slate-100 mb-6 group-hover:border-emerald-200 transition-colors shadow-sm overflow-hidden">
                       <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-emerald-500 rounded-tl-xl"></div>
                       <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-emerald-500 rounded-tr-xl"></div>
                       <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-emerald-500 rounded-bl-xl"></div>
                       <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-emerald-500 rounded-br-xl"></div>
 
-                      <QrCode className="w-40 h-40 text-slate-800" strokeWidth={1.5} />
+                      <ReferralQrImage
+                        referral={linkedReferral}
+                        voucher={voucher}
+                        className="h-full w-full object-contain p-8"
+                      />
                     </div>
 
                     <div className="space-y-3">
@@ -526,6 +687,9 @@ export function RewardsPage() {
                         <div className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 text-left">
                           <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Referral Status</p>
                           <p className="text-sm font-bold text-slate-900 mb-1">{linkedReferral.status.toUpperCase()}</p>
+                          <p className="text-xs font-bold text-slate-500 mb-2">
+                            Issued {formatRewardDate(linkedReferral.issued_at || voucher.created_at)}
+                          </p>
                           {linkedReferral.bonus_label ? (
                             <p className="text-sm font-medium text-slate-600 mb-3">
                               Bonus: <span className="font-black">{linkedReferral.bonus_label}</span>
@@ -536,27 +700,39 @@ export function RewardsPage() {
                               type="button"
                               onClick={() => void handleReferralOpen(voucher.code)}
                               disabled={!canOpen || actingReferralId === linkedReferral.id}
-                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                             >
-                              {actingReferralId === linkedReferral.id ? 'Saving...' : 'Open Referral'}
+                              <ExternalLink className="h-4 w-4" />
+                              {actingReferralId === linkedReferral.id ? 'Saving...' : 'Open Partner'}
                             </button>
                             <button
                               type="button"
                               onClick={() => void handleReferralRedeem(voucher.code)}
                               disabled={!canRedeem || actingReferralId === linkedReferral.id}
-                              className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
                             >
+                              <CheckCircle2 className="h-4 w-4" />
                               {actingReferralId === linkedReferral.id ? 'Saving...' : 'Redeem'}
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleLoadReferralDetail(linkedReferral.id)}
+                              disabled={loadingReferralDetailId === linkedReferral.id}
+                              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                            >
+                              <FileText className="h-4 w-4" />
+                              {loadingReferralDetailId === linkedReferral.id ? 'Loading...' : 'Detail'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDownloadPdf(voucher, linkedReferral)}
+                              disabled={pdfDownloadingCode === voucher.code}
+                              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+                            >
+                              <Download className="h-4 w-4" />
+                              {pdfDownloadingCode === voucher.code ? 'Preparing...' : 'PDF'}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => void handleLoadReferralDetail(linkedReferral.id)}
-                            disabled={loadingReferralDetailId === linkedReferral.id}
-                            className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-                          >
-                            {loadingReferralDetailId === linkedReferral.id ? 'Loading Detail...' : 'View Referral Detail'}
-                          </button>
                         </div>
                       ) : (
                         <div className="w-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-left text-sm font-medium text-slate-500">
@@ -605,13 +781,35 @@ export function RewardsPage() {
                 <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Referral Detail</p>
                 <h2 className="text-2xl font-black text-slate-900">{selectedReferralDetail.code}</h2>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedReferralDetail(null)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
-              >
-                Close Detail
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={buildReferralLandingUrl(selectedReferralDetail)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open Partner
+                </a>
+                {selectedReferralVoucher ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleDownloadPdf(selectedReferralVoucher, selectedReferralDetail)}
+                    disabled={pdfDownloadingCode === selectedReferralVoucher.code}
+                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                  >
+                    <Download className="h-4 w-4" />
+                    {pdfDownloadingCode === selectedReferralVoucher.code ? 'Preparing...' : 'Download PDF'}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setSelectedReferralDetail(null)}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  Close Detail
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -625,15 +823,25 @@ export function RewardsPage() {
               </div>
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-400">Issued At</p>
-                <p className="mt-1 text-sm font-bold text-slate-900">{selectedReferralDetail.issued_at || 'Not available'}</p>
+                <p className="mt-1 text-sm font-bold text-slate-900">{formatRewardDate(selectedReferralDetail.issued_at)}</p>
               </div>
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-400">Redeemed At</p>
-                <p className="mt-1 text-sm font-bold text-slate-900">{selectedReferralDetail.redeemed_at || 'Not redeemed'}</p>
+                <p className="mt-1 text-sm font-bold text-slate-900">{formatRewardDate(selectedReferralDetail.redeemed_at)}</p>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {selectedReferralVoucher ? (
+                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Scan Voucher</p>
+                  <ReferralQrImage
+                    referral={selectedReferralDetail}
+                    voucher={selectedReferralVoucher}
+                    className="mx-auto h-56 w-56 object-contain rounded-2xl border border-slate-100 bg-white p-4"
+                  />
+                </div>
+              ) : null}
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">QR Payload</p>
                 <p className="text-sm font-medium break-all text-slate-600">
@@ -643,7 +851,7 @@ export function RewardsPage() {
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">QR Target</p>
                 <p className="text-sm font-medium break-all text-slate-600">
-                  {selectedReferralDetail.qr_target_url || 'No QR target URL returned.'}
+                  {getReferralCredentialUrl(selectedReferralDetail.id)}
                 </p>
               </div>
             </div>

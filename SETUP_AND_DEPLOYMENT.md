@@ -63,6 +63,7 @@ New users can also register with email and password through the UI.
 ## Login Methods
 
 - Email and password works on a fresh local install.
+- Forgot-password emails work when SMTP settings are configured in `backend/.env`; local development logs the reset link if SMTP is not set.
 - Google sign-in uses the public client ID included in the repository for local development. Use `http://127.0.0.1:5173`, not a different origin, unless the OAuth console is updated.
 - GitHub sign-in needs `GITHUB_CLIENT_SECRET` in `backend/.env`. The secret must not be committed.
 - Facebook and Instagram sign-in are demo front-end flows for presentation.

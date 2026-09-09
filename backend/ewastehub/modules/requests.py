@@ -5,6 +5,7 @@ from DBupdate.db_bridge import (
     create_collection_request,
     create_data_retrieval_request,
     create_device,
+    create_notification,
     get_user_by_email,
     get_user_by_id,
     get_collection_request,
@@ -188,9 +189,17 @@ def create_request():
     )
 
     request_details = get_collection_request(cr["id"])
+    create_notification(
+        user_id=owner.id,
+        kind="request",
+        severity="info",
+        title="Request submitted",
+        body=f"{item_name} has been classified as {classification}.",
+        target_path=f"/app/dashboard?q=EW-{cr['id']}",
+    )
     paid_retrieval = bool(data.get("paid_retrieval"))
     if paid_retrieval:
-        create_data_retrieval_request(
+        retrieval_request = create_data_retrieval_request(
             device_id=device["id"],
             consumer_id=owner.id,
             status="pending",
@@ -200,6 +209,15 @@ def create_request():
             payment_status="unpaid",
             note="Created from user request submission.",
         )
+        if retrieval_request:
+            create_notification(
+                user_id=owner.id,
+                kind="vault",
+                severity="info",
+                title="Data retrieval request created",
+                body=f"Security Vault checkout is ready for {item_name}.",
+                target_path="/app/security-vault",
+            )
     return jsonify({"message": "created", "request": request_details or cr}), 201
 
 
@@ -245,6 +263,61 @@ def list_unknown_requests():
         if _sl((item.get("device") or {}).get("classification")) == "unknown"
     ]
     return jsonify({"requests": items})
+
+
+@requests_bp.post("/<int:req_id>/staff-draft")
+@require_roles("staff", "admin")
+def create_staff_draft_from_request(req_id: int):
+    cr = get_collection_request(req_id)
+    if not cr:
+        return jsonify({"error": "not found"}), 404
+
+    source_device = cr.get("device") or {}
+    item_name = _s(source_device.get("name") or cr.get("item_name"))
+    device_type = _sl(source_device.get("device_type") or cr.get("category"))
+    condition = _sl(source_device.get("condition") or cr.get("condition"))
+    demand = _sl(source_device.get("demand")) or "unknown"
+    classification = _sl(source_device.get("classification")) or "unknown"
+    age_years = source_device.get("age_years")
+
+    if not item_name:
+        return jsonify({"error": "request has no device name to draft"}), 409
+    if device_type not in ALLOWED_TYPES:
+        device_type = "other"
+    if condition not in ALLOWED_CONDITIONS:
+        condition = "unknown"
+    if demand not in ALLOWED_DEMAND:
+        demand = "unknown"
+    if classification not in {"current", "recycle", "rare", "unwanted", "unknown"}:
+        classification = "unknown"
+
+    draft = create_device(
+        owner_id=cr["consumer_id"],
+        name=item_name,
+        device_type=device_type,
+        condition=condition,
+        age_years=age_years,
+        demand=demand,
+        classification=classification,
+        workflow_status=_sl(source_device.get("workflow_status")) or "pending",
+        is_visible=False,
+        is_draft=True,
+        notes=f"Draft created from owner request EW-{req_id}. Staff can edit and publish when ready.",
+        brand=None,
+        model=None,
+    )
+
+    create_notification(
+        user_id=cr["consumer_id"],
+        kind="request",
+        severity="info",
+        title="Staff draft created",
+        body=f"A hidden staff draft was created from your {item_name} offer for review.",
+        target_path="/app/dashboard",
+    )
+
+    return jsonify({"message": "draft created", "device": draft, "request": cr}), 201
+
 
 @requests_bp.patch("/<int:req_id>/status")
 @require_roles("staff", "admin")

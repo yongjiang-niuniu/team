@@ -128,7 +128,7 @@ export function AdminOverviewPage() {
         />
         <SummaryCard
           label="Referral fees"
-          value={`AUD ${Number(referralSummary?.fee_amount_total || 0).toFixed(2)}`}
+          value={`GBP ${Number(referralSummary?.fee_amount_total || 0).toFixed(2)}`}
           detail={`${referralSummary?.total_referral_fees ?? 0} fee records tracked`}
           icon={Activity}
         />

@@ -124,6 +124,7 @@ Important notes:
 - Local development can use the default SQLite database without setting `DATABASE_URL`.
 - Google login uses the public local-development client ID in the repository.
 - GitHub login requires `GITHUB_CLIENT_SECRET` in `backend/.env`.
+- Password reset emails require SMTP settings in `backend/.env`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and `MAIL_DEFAULT_SENDER`.
 - Facebook and Instagram login are available as demo sign-in flows for presentation.
 
 ## OAuth Setup

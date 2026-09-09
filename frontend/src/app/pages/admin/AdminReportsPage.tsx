@@ -164,12 +164,12 @@ export function AdminReportsPage() {
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
             <ReportCard
               label="Payment volume"
-              value={`AUD ${Number(paymentSummary?.total_amount ?? paymentSummary?.amount_total ?? 0).toFixed(2)}`}
+              value={`GBP ${Number(paymentSummary?.total_amount ?? paymentSummary?.amount_total ?? 0).toFixed(2)}`}
               detail={`${paymentSummary?.total_transactions ?? 0} transactions`}
             />
             <ReportCard
               label="Referral volume"
-              value={`AUD ${Number(referralSummary?.fee_amount_total || 0).toFixed(2)}`}
+              value={`GBP ${Number(referralSummary?.fee_amount_total || 0).toFixed(2)}`}
               detail={`${referralSummary?.total_referral_codes ?? 0} referral codes`}
             />
             <ReportCard

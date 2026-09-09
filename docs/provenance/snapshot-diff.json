@@ -1,0 +1,419 @@
+{
+  "report_snapshot": "dc62413f5a9b04827b15a0be506c3301d00129e7",
+  "latest_snapshot": "d503d6b7c96f1a4e050c4d3e02f528a892d2ab45",
+  "report_snapshot_files": 216,
+  "latest_snapshot_files": 226,
+  "identical_count": 180,
+  "added": [
+    "backend/ewastehub/email_delivery.py",
+    "backend/ewastehub/modules/notifications.py",
+    "backend/migrations/versions/f8a9b0c1d2e3_add_notifications_table.py",
+    "frontend/src/app/components/ReferralQrDialog.tsx",
+    "frontend/src/app/lib/notifications.ts",
+    "frontend/src/app/lib/referrals.ts",
+    "frontend/src/app/lib/rewardDocuments.ts",
+    "frontend/src/app/pages/PaymentDemoPage.tsx",
+    "frontend/src/app/pages/ReferralCredentialPage.tsx",
+    "frontend/src/app/pages/staff/StaffReportsPage.tsx"
+  ],
+  "removed": [],
+  "modified": [
+    {
+      "path": "DBupdate/db_bridge.py",
+      "report_time": {
+        "sha256": "c519b7bb39de9094a626a23dedb098a5cad48c5188f2ebb0163f8542a7b877f4",
+        "bytes": 116842
+      },
+      "latest": {
+        "sha256": "824cc8c61f38df7547aa28c6db32f97f5541e53a20ae726723b6eed86a97ddcb",
+        "bytes": 122867
+      }
+    },
+    {
+      "path": "DBupdate/db_new_test.py",
+      "report_time": {
+        "sha256": "a5bcd6a52ce7398683aa3d1451e50fde8ecb9cdbd8560842895dc3e240625fc7",
+        "bytes": 25482
+      },
+      "latest": {
+        "sha256": "81980cb3cb76eb29970de5444c51f5fafa4e8df037f706a413d25ddbcd49ea54",
+        "bytes": 26226
+      }
+    },
+    {
+      "path": "README.md",
+      "report_time": {
+        "sha256": "719c92bac726933dae51fb54f7b652b7892b1d366607f90c89069e004cc6a11c",
+        "bytes": 6909
+      },
+      "latest": {
+        "sha256": "3a792330f015d653ed73f19793c784344735d303f7c5c5fc5c61b385f93eb15b",
+        "bytes": 7061
+      }
+    },
+    {
+      "path": "SETUP_AND_DEPLOYMENT.md",
+      "report_time": {
+        "sha256": "f13291772638c9226f52ab024ee6e0e0d8b1ed49fde13fb43bf308681b310d7e",
+        "bytes": 4330
+      },
+      "latest": {
+        "sha256": "18760bc749859b3564cb84d42f9a1f85923c8645b7585b3e2396f2b98ace23a6",
+        "bytes": 4471
+      }
+    },
+    {
+      "path": "backend/.env.example",
+      "report_time": {
+        "sha256": "264b1219500ef4bb14bd587d2fd51bb90a01c1cc9af09bb63b5c78ea0cb08280",
+        "bytes": 803
+      },
+      "latest": {
+        "sha256": "15d80f85ecc7f8cb36aca714a074f2427815b1f30fd88243b5940e41774fe5d6",
+        "bytes": 1272
+      }
+    },
+    {
+      "path": "backend/ewastehub/__init__.py",
+      "report_time": {
+        "sha256": "3baa9841aa33aae18ed6fe9507d1700dbff1038320d27ab8865be305bb026311",
+        "bytes": 6223
+      },
+      "latest": {
+        "sha256": "844a07e09b0168699609632e0172108271d826f92154e92cb33ad943823c5c60",
+        "bytes": 6900
+      }
+    },
+    {
+      "path": "backend/ewastehub/config.py",
+      "report_time": {
+        "sha256": "742050114ae1c2337ec544f43b817da04a390a6ab78fe3796b28ad200e1aeaf5",
+        "bytes": 1463
+      },
+      "latest": {
+        "sha256": "c32c933a82139fee1a219264413ca29170a44767aea482accf98e1b3472d09d6",
+        "bytes": 2222
+      }
+    },
+    {
+      "path": "backend/ewastehub/modules/auth.py",
+      "report_time": {
+        "sha256": "f851d6a2346435c0df01148143d22400a90f9135faf09d0178d96652a9ad5d2a",
+        "bytes": 17252
+      },
+      "latest": {
+        "sha256": "91476034a754bb1271e249701d82aed12b4bfa0e20d507721a23cc16e1eb40ba",
+        "bytes": 20787
+      }
+    },
+    {
+      "path": "backend/ewastehub/modules/requests.py",
+      "report_time": {
+        "sha256": "525554ea83b3d33532f307e02b9054f3f5d41d0f617011b62764a7d798037dae",
+        "bytes": 9211
+      },
+      "latest": {
+        "sha256": "582e6fa337e2a6cc66d7dbfe9b923c332dbd9a276e9a73085b31c85101c41c9e",
+        "bytes": 11881
+      }
+    },
+    {
+      "path": "backend/ewastehub/modules/vault.py",
+      "report_time": {
+        "sha256": "37ecc722d58518a640fc260a0ff648d0db1d21a6516baab9ffeb36144543ed1b",
+        "bytes": 18476
+      },
+      "latest": {
+        "sha256": "18bca1840bc277f6731e1f257bb1e83f7f890bb9d382d6889a5815786a838fbe",
+        "bytes": 23345
+      }
+    },
+    {
+      "path": "backend/ewastehub/routes.py",
+      "report_time": {
+        "sha256": "7144485079ab91b25e66f8f67ae61dfa0cbf916f1574bfc714fdbd7e237c6071",
+        "bytes": 3923
+      },
+      "latest": {
+        "sha256": "0cc80fc4f0ad9585adcddbe69021fe98bd89914fd03d077909f81ef3aff720dc",
+        "bytes": 5111
+      }
+    },
+    {
+      "path": "backend/tests/test_auth_flows.py",
+      "report_time": {
+        "sha256": "667a7cceda3706ca41bb3e03679c8ca8a78cd0a3b3b57ec5f773c5d1f4cb4884",
+        "bytes": 130911
+      },
+      "latest": {
+        "sha256": "8e65aa0024b48d158c7975006f751d871a9f8a87fee2cf88832e725a59036fcc",
+        "bytes": 145280
+      }
+    },
+    {
+      "path": "backend/tests/test_github_login.py",
+      "report_time": {
+        "sha256": "4a541c754ff28230a8ea1f224bb27c7a7c57ed38ded120c42793cc0ea017b279",
+        "bytes": 6174
+      },
+      "latest": {
+        "sha256": "514f25a626683ad718e7ebaf8e08a67adf6fc8350bca2b48a6a445a21e5e9782",
+        "bytes": 8744
+      }
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "report_time": {
+        "sha256": "5d692f796ddfeeef7388928a9ad5d70531242e5be97eb6d920cb5a803143a10f",
+        "bytes": 223659
+      },
+      "latest": {
+        "sha256": "3102654c232e6454c9d627768cead1a8e2c351f92313288f231248d4e5487f16",
+        "bytes": 243046
+      }
+    },
+    {
+      "path": "frontend/package.json",
+      "report_time": {
+        "sha256": "ba720be1e1f0a995fd1f7a188e8ac02d14bdee825e0647df5bc2b5ff3a448c5b",
+        "bytes": 2522
+      },
+      "latest": {
+        "sha256": "a1094e781284c93850f71206b0b5241780bb6503f3efc134a74c266c2c6aa513",
+        "bytes": 2630
+      }
+    },
+    {
+      "path": "frontend/src/app/components/DashboardLayout.tsx",
+      "report_time": {
+        "sha256": "060b92eb1d7b8183325b55620c705cb22618be63ea79d419efcd87b46b63dcb5",
+        "bytes": 16339
+      },
+      "latest": {
+        "sha256": "60bc14d52107534a06d5c0ec59588751402aacf2f8f374cb7a6dad668826b80c",
+        "bytes": 20894
+      }
+    },
+    {
+      "path": "frontend/src/app/components/PaymentSummaryCard.tsx",
+      "report_time": {
+        "sha256": "495f142686572ac68550e97ad83e1da75906f245db9494ca28a77745c15dfd51",
+        "bytes": 5307
+      },
+      "latest": {
+        "sha256": "752edabaabf60ace0a6613762d822e3b9919d33963cbc160e0058649231255e3",
+        "bytes": 5249
+      }
+    },
+    {
+      "path": "frontend/src/app/layouts/BackOfficeLayout.tsx",
+      "report_time": {
+        "sha256": "90400bab7811e4291a0b7270745d6481fdc304378af1d950c875b65862266b59",
+        "bytes": 5343
+      },
+      "latest": {
+        "sha256": "e68acbfe9ff8d2b5ce5c270957ea39147f42a3dcf77f71c211fce89eec483aea",
+        "bytes": 5406
+      }
+    },
+    {
+      "path": "frontend/src/app/lib/retrieval.ts",
+      "report_time": {
+        "sha256": "20d11af5f1bc4f58a56402cc91578af665a035b92e5694b77b110f1820b87c4b",
+        "bytes": 7150
+      },
+      "latest": {
+        "sha256": "1369e68e3276a522f32b02e103988f146a5fa8c8a66a65eba83124401aa10503",
+        "bytes": 7219
+      }
+    },
+    {
+      "path": "frontend/src/app/lib/staffPortal.ts",
+      "report_time": {
+        "sha256": "0843257b1a2ce17e16677cb059c94986ae0a7f0d255fad0afb7a17752efd75dd",
+        "bytes": 4323
+      },
+      "latest": {
+        "sha256": "4287f7307e6e72f1931245b187bed3046a836f25b1756dedd113ab06caf950fd",
+        "bytes": 4708
+      }
+    },
+    {
+      "path": "frontend/src/app/lib/userPortal.ts",
+      "report_time": {
+        "sha256": "cf6a3560cd45a1e1abd33cfd86e79c42e2f74f07302e2a583ed2d169b42a61c7",
+        "bytes": 21095
+      },
+      "latest": {
+        "sha256": "cacc30cde1ea17169447ec5c5752623d30d2e12986e550cd32659a254cc31b41",
+        "bytes": 21327
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/AuthPage.tsx",
+      "report_time": {
+        "sha256": "63e27a3bc7043452fac0b7b7d9bef0c44ab879ba5e262b1a9b541aebd5f0c112",
+        "bytes": 60732
+      },
+      "latest": {
+        "sha256": "267ebec3df3efcec8939fb267cf95cdff5b5b1dfef3a12b863e582847cab72bf",
+        "bytes": 61459
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/DashboardPage.tsx",
+      "report_time": {
+        "sha256": "9d64e349da510b592f4e9adaa3cc0bd2858f5138805229fa3ba6013a23babf78",
+        "bytes": 50209
+      },
+      "latest": {
+        "sha256": "0e63c5341e075e010d39f3aae32d91c3aa31b512119bd8f681224e00397a85b4",
+        "bytes": 55300
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/NewRequestPage.tsx",
+      "report_time": {
+        "sha256": "8f50fd0b43f6590b3acdccdc3a385b7dea8097977fc4253ac059f9c4c54f7241",
+        "bytes": 25256
+      },
+      "latest": {
+        "sha256": "887e5891f0fb479d0accc6becc080d1191297bc63cab5af5e874afcad8bc70c3",
+        "bytes": 29158
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/PaymentCancelPage.tsx",
+      "report_time": {
+        "sha256": "13de6832f12423bd3298db1d0c330e023625210d02c39565d46435d14d964191",
+        "bytes": 5499
+      },
+      "latest": {
+        "sha256": "effd88f41b61537bba8958b1d2da8589f0dc997838022ee3c0a0e5d7700a2bf7",
+        "bytes": 5769
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/PaymentSuccessPage.tsx",
+      "report_time": {
+        "sha256": "246bd2d887e5fbeddc07d5ace056133106c6a6181a830dbe930556b86cee0582",
+        "bytes": 5712
+      },
+      "latest": {
+        "sha256": "5e0e0762a0f7aacca8aed9338a42e90a4da4169fb113e241a8076d5fb38cb067",
+        "bytes": 5892
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/RewardsPage.tsx",
+      "report_time": {
+        "sha256": "560f7ac9517b4db2fb219883416f7e079c895c9799ff03546808f223d4e43b08",
+        "bytes": 32335
+      },
+      "latest": {
+        "sha256": "953cc5f0d9ae5e6d8d01298c2874a730ea7463bb16e79383ab6ad6922900dd3c",
+        "bytes": 41064
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/SecurityVaultPage.tsx",
+      "report_time": {
+        "sha256": "448b7ba01b4ab6e6f5869dea50c8a875099605d7747709b6d0aa8115af70cfa8",
+        "bytes": 37209
+      },
+      "latest": {
+        "sha256": "bb2769cb3300ebc54174b04707e0d259209faef7e85a84bdc18386cbec7040c6",
+        "bytes": 42305
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/SettingsPage.tsx",
+      "report_time": {
+        "sha256": "ba5cd8d0ac33e7319b9c21d0be140ff8efdda7e54bdedb15e37b86ec6dd33487",
+        "bytes": 16138
+      },
+      "latest": {
+        "sha256": "18a7487a3698b539d660f7fdf11c8bfc8d99204e428263284cd62e482023e92d",
+        "bytes": 21222
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminOverviewPage.tsx",
+      "report_time": {
+        "sha256": "f8a4615f173b598b8837f56c3d571a2264adf5cfb725c515d35a6c833ad4bd20",
+        "bytes": 6448
+      },
+      "latest": {
+        "sha256": "3e4be42537f96c3ab28f553417e74af9642e2b887200e09996c9e68f3c647197",
+        "bytes": 6448
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminPaymentsPage.tsx",
+      "report_time": {
+        "sha256": "0b86de08b3c72cd18cca35bf79ca3c2f2aa83545c5b9b99f81a5c14b4ca9b85b",
+        "bytes": 8614
+      },
+      "latest": {
+        "sha256": "21dc05d93776b9924b82ba4233e9e7a3e37b747c669ae0d142150e6b6511cb9c",
+        "bytes": 8614
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminReferralsPage.tsx",
+      "report_time": {
+        "sha256": "fe436aa541e610e2371284a6acac2218d46459c5c23e37f04269607e0b08226d",
+        "bytes": 11217
+      },
+      "latest": {
+        "sha256": "2198be08d41a380ff0a9d822946eb6d053061b0477aaddb542124294b16e386b",
+        "bytes": 11217
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/admin/AdminReportsPage.tsx",
+      "report_time": {
+        "sha256": "400d5e1b32a5349d4179f2ce802f77c8104acff2beac30ee5b905712bb124dd9",
+        "bytes": 8631
+      },
+      "latest": {
+        "sha256": "90d4146ed1b650b2c4c7c8072f74b65feb134358fada2cb97de23d6b3e06c657",
+        "bytes": 8631
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffReferralsPage.tsx",
+      "report_time": {
+        "sha256": "b2a82e01129403df82a4e1cb30569cf3f7c334c1403d53afdc649240c5492ed2",
+        "bytes": 11591
+      },
+      "latest": {
+        "sha256": "757aa1688dd1ec1eb85dcccde3234cd2f6bb8334eea5c8694e106590efee2d7f",
+        "bytes": 11591
+      }
+    },
+    {
+      "path": "frontend/src/app/pages/staff/StaffRequestsPage.tsx",
+      "report_time": {
+        "sha256": "c148d9a9597d2270f0844992218d03309de04fcc589748d94545a4e1c0be3db4",
+        "bytes": 17967
+      },
+      "latest": {
+        "sha256": "5ebad486996bf68abc39cde13c94780cc1c87fa6f955d173a65723eaf09648ee",
+        "bytes": 19385
+      }
+    },
+    {
+      "path": "frontend/src/app/routes.tsx",
+      "report_time": {
+        "sha256": "72c305e4e52103aaf7e03249b0909c0aa3fb85cb4efd4f7596f1ca7a18f289ab",
+        "bytes": 5518
+      },
+      "latest": {
+        "sha256": "d73900a52e0d8bfc655cd8d67e29c140770efac93b9b03f3b1d5c3253bc424df",
+        "bytes": 6057
+      }
+    }
+  ],
+  "same_report_pdf": true
+}

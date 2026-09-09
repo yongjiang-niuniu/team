@@ -24,8 +24,10 @@ export type RetrievalCheckout = {
   checkout_reference?: string | null;
   amount?: number | null;
   currency?: string | null;
-  integration_mode?: 'provider' | 'stub' | string;
+  integration_mode?: 'provider' | 'stub' | 'demo_sandbox' | string;
   provider_configured?: boolean;
+  is_demo?: boolean;
+  demo_notice?: string | null;
   success_url: string;
   cancel_url: string;
 };

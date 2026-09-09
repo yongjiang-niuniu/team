@@ -119,6 +119,29 @@ class GitHubLoginTestCase(unittest.TestCase):
             self.assertEqual(flask_session["github_oauth_next"], "/app/dashboard")
             self.assertEqual(flask_session["github_oauth_state"], params["state"][0])
 
+    def test_github_login_uses_public_origin_for_ngrok_demo(self):
+        public_origin = "https://extent-ranged-race.ngrok-free.dev"
+        response = self.client.get(
+            f"/api/auth/github/login?next=/app/dashboard&public_origin={public_origin}"
+        )
+
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.headers["Location"]
+        parsed = urlparse(redirect_url)
+        params = parse_qs(parsed.query)
+
+        self.assertEqual(
+            params["redirect_uri"][0],
+            f"{public_origin}/api/auth/github/callback",
+        )
+
+        with self.client.session_transaction() as flask_session:
+            self.assertEqual(flask_session["github_oauth_frontend_origin"], public_origin)
+            self.assertEqual(
+                flask_session["github_oauth_redirect_uri"],
+                f"{public_origin}/api/auth/github/callback",
+            )
+
     @patch("ewastehub.modules.auth.requests.get")
     @patch("ewastehub.modules.auth.requests.post")
     def test_github_callback_creates_user_and_redirects_back_to_frontend(self, mock_post, mock_get):
@@ -157,8 +180,51 @@ class GitHubLoginTestCase(unittest.TestCase):
             user = session.query(User).filter_by(email="github-user@example.com").first()
             self.assertIsNotNone(user)
             self.assertEqual(user.role, "consumer")
+            self.assertEqual(user.auth_provider, "github")
+            self.assertEqual(user.full_name, "octocat")
         finally:
             session.close()
+
+    @patch("ewastehub.modules.auth.requests.get")
+    @patch("ewastehub.modules.auth.requests.post")
+    def test_github_callback_returns_to_public_origin_for_ngrok_demo(self, mock_post, mock_get):
+        public_origin = "https://extent-ranged-race.ngrok-free.dev"
+        start_response = self.client.get(
+            f"/api/auth/github/login?next=/app/dashboard&public_origin={public_origin}"
+        )
+        self.assertEqual(start_response.status_code, 302)
+
+        with self.client.session_transaction() as flask_session:
+            github_state = flask_session["github_oauth_state"]
+
+        mock_post.return_value = _FakeResponse({"access_token": "github-access-token"})
+        mock_get.side_effect = [
+            _FakeResponse({"id": 12345, "login": "octocat"}),
+            _FakeResponse(
+                [
+                    {
+                        "email": "github-user@example.com",
+                        "verified": True,
+                        "primary": True,
+                    }
+                ]
+            ),
+        ]
+
+        response = self.client.get(
+            f"/api/auth/github/callback?code=test-code&state={github_state}"
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            response.headers["Location"].startswith(
+                f"{public_origin}/auth/oauth-callback#"
+            )
+        )
+        self.assertEqual(
+            mock_post.call_args.kwargs["data"]["redirect_uri"],
+            f"{public_origin}/api/auth/github/callback",
+        )
 
 
 if __name__ == "__main__":

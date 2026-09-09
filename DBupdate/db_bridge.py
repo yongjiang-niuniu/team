@@ -17,6 +17,7 @@ from DBupdate.db_new_test import (
     ReferralCode,
     ReferralActivity,
     ReferralFee,
+    Notification,
     WipeJob,
     WipeCertificate,
 )
@@ -554,11 +555,19 @@ def get_user_by_email(email: str):
         _close(session)
 
 
-def create_user(email: str, password_hash: str, role: str = "consumer"):
+def create_user(
+    email: str,
+    password_hash: str,
+    role: str = "consumer",
+    full_name: str | None = None,
+    auth_provider: str = "local",
+):
     session = get_session()
     try:
         user = User(
             email=email,
+            auth_provider=auth_provider,
+            full_name=full_name,
             password_hash=password_hash,
             role=role,
         )
@@ -571,6 +580,136 @@ def create_user(email: str, password_hash: str, role: str = "consumer"):
             "role": user.role,
             "created_at": user.created_at.isoformat() if user.created_at else None,
         }
+    finally:
+        _close(session)
+
+
+# ---------- notifications ----------
+def _serialize_notification(notification: Notification):
+    return {
+        "id": notification.id,
+        "user_id": notification.user_id,
+        "kind": notification.kind,
+        "severity": notification.severity,
+        "title": notification.title,
+        "body": notification.body,
+        "target_path": notification.target_path,
+        "read_at": notification.read_at.isoformat() if notification.read_at else None,
+        "created_at": notification.created_at.isoformat() if notification.created_at else None,
+    }
+
+
+def _add_notification(
+    session,
+    *,
+    user_id: int | None,
+    kind: str,
+    severity: str,
+    title: str,
+    body: str | None = None,
+    target_path: str | None = None,
+):
+    if user_id is None:
+        return None
+
+    notification = Notification(
+        user_id=int(user_id),
+        kind=_normalize_text(kind) or "system",
+        severity=_normalize_text(severity) or "info",
+        title=_normalize_text(title) or "Update",
+        body=_normalize_text(body) or None,
+        target_path=_normalize_text(target_path) or None,
+        created_at=_utcnow(),
+    )
+    session.add(notification)
+    return notification
+
+
+def create_notification(
+    *,
+    user_id: int,
+    kind: str = "system",
+    severity: str = "info",
+    title: str,
+    body: str | None = None,
+    target_path: str | None = None,
+):
+    session = get_session()
+    try:
+        notification = _add_notification(
+            session,
+            user_id=user_id,
+            kind=kind,
+            severity=severity,
+            title=title,
+            body=body,
+            target_path=target_path,
+        )
+        session.commit()
+        session.refresh(notification)
+        return _serialize_notification(notification)
+    finally:
+        _close(session)
+
+
+def list_user_notifications(user_id: int, *, limit: int = 20):
+    session = get_session()
+    try:
+        items = (
+            session.query(Notification)
+            .filter(Notification.user_id == user_id)
+            .order_by(Notification.created_at.desc(), Notification.id.desc())
+            .limit(limit)
+            .all()
+        )
+        unread_count = (
+            session.query(Notification)
+            .filter(Notification.user_id == user_id)
+            .filter(Notification.read_at.is_(None))
+            .count()
+        )
+        return {
+            "notifications": [_serialize_notification(item) for item in items],
+            "unread_count": unread_count,
+        }
+    finally:
+        _close(session)
+
+
+def mark_notification_read(user_id: int, notification_id: int):
+    session = get_session()
+    try:
+        notification = (
+            session.query(Notification)
+            .filter(Notification.id == notification_id)
+            .filter(Notification.user_id == user_id)
+            .first()
+        )
+        if notification is None:
+            return None
+        if notification.read_at is None:
+            notification.read_at = _utcnow()
+            session.commit()
+            session.refresh(notification)
+        return _serialize_notification(notification)
+    finally:
+        _close(session)
+
+
+def mark_all_notifications_read(user_id: int):
+    session = get_session()
+    try:
+        unread = (
+            session.query(Notification)
+            .filter(Notification.user_id == user_id)
+            .filter(Notification.read_at.is_(None))
+            .all()
+        )
+        now = _utcnow()
+        for notification in unread:
+            notification.read_at = now
+        session.commit()
+        return {"updated": len(unread)}
     finally:
         _close(session)
 
@@ -1635,6 +1774,15 @@ def _referral_defaults_for_classification(classification: str | None):
             "website_url": "https://uk.webuy.com/",
             "referral_landing_url": "https://uk.webuy.com/",
             "voucher_label": "Trade-in Bonus",
+            "demo_estimated_value": "GBP 120-220",
+            "demo_value_source": "CeX UK demo estimate range",
+            "demo_hand_in_locations": [
+                "CeX Sheffield High Street",
+                "CeX Meadowhall",
+                "CeX Leeds Headrow",
+            ],
+            "demo_wiping_guarantee": "Partner hand-in includes a demo secure data-wiping guarantee before resale.",
+            "partner_detail_url": "https://uk.webuy.com/search?stext=used%20phone",
             "bonus_label": "£185.00",
         }
     if normalized == "rare":
@@ -1644,6 +1792,15 @@ def _referral_defaults_for_classification(classification: str | None):
             "website_url": "https://www.ebay.co.uk/",
             "referral_landing_url": "https://www.ebay.co.uk/",
             "voucher_label": "Rare Device Referral",
+            "demo_estimated_value": "GBP 80-300 collector guidance",
+            "demo_value_source": "eBay UK and Collector Network demo guidance",
+            "demo_hand_in_locations": [
+                "eBay UK marketplace listing",
+                "Collector Network remote appraisal",
+                "eWaste Hub staff-assisted hand-in",
+            ],
+            "demo_wiping_guarantee": "Rare-device referrals include a demo marketplace wipe and ownership handover note.",
+            "partner_detail_url": "https://www.ebay.co.uk/sch/i.html?_nkw=retro%20electronics",
             "bonus_label": "£250.00",
         }
     return None
@@ -1659,6 +1816,9 @@ def _supported_partner_classifications(partner: ThirdPartyPartner):
 
 
 def _serialize_partner(partner: ThirdPartyPartner):
+    supported_classifications = _supported_partner_classifications(partner)
+    metadata_classification = "rare" if "rare" in supported_classifications and "current" not in supported_classifications else "current"
+    demo_metadata = _referral_defaults_for_classification(metadata_classification) or {}
     return {
         "id": partner.id,
         "name": partner.name,
@@ -1666,7 +1826,12 @@ def _serialize_partner(partner: ThirdPartyPartner):
         "website_url": partner.website_url,
         "referral_landing_url": partner.referral_landing_url,
         "active": partner.active,
-        "supported_classifications": _supported_partner_classifications(partner),
+        "supported_classifications": supported_classifications,
+        "demo_estimated_value": demo_metadata.get("demo_estimated_value"),
+        "demo_value_source": demo_metadata.get("demo_value_source"),
+        "demo_hand_in_locations": demo_metadata.get("demo_hand_in_locations", []),
+        "demo_wiping_guarantee": demo_metadata.get("demo_wiping_guarantee"),
+        "partner_detail_url": demo_metadata.get("partner_detail_url") or partner.referral_landing_url or partner.website_url,
         "created_at": partner.created_at.isoformat() if partner.created_at else None,
         "updated_at": partner.updated_at.isoformat() if partner.updated_at else None,
     }
@@ -2451,6 +2616,7 @@ def issue_referral_code(
             return _serialize_referral_code(session, existing)
 
         defaults = _referral_defaults_for_classification(classification) or {}
+        bonus_label = "GBP 185.00" if classification == "current" else "GBP 250.00"
         request_reference = request_id or (request_record.id if request_record else device.id)
         code_prefix = "EWH" if classification == "current" else "RARE"
         referral_code = ReferralCode(
@@ -2463,7 +2629,7 @@ def issue_referral_code(
             qr_payload=None,
             qr_target_url=qr_target_url or partner.referral_landing_url,
             voucher_label=defaults.get("voucher_label"),
-            bonus_label=defaults.get("bonus_label"),
+            bonus_label=bonus_label,
             status="issued",
             issued_at=now,
             created_at=now,
@@ -2496,6 +2662,15 @@ def issue_referral_code(
             created_at=now,
         )
         session.add(activity)
+        _add_notification(
+            session,
+            user_id=consumer_id,
+            kind="referral",
+            severity="success",
+            title="Trade-in QR code ready",
+            body=f"{device.name} is ready for partner hand-in at {partner.name}.",
+            target_path=f"/app/rewards/referrals/{referral_code.id}",
+        )
         _ensure_reward_voucher_for_referral(session, referral_code)
         session.commit()
         session.refresh(referral_code)

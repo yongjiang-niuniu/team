@@ -167,12 +167,12 @@ export function AdminPaymentsPage() {
             />
             <MoneyCard
               label="Gross amount"
-              value={`AUD ${Number(summary?.total_amount ?? summary?.amount_total ?? 0).toFixed(2)}`}
+              value={`GBP ${Number(summary?.total_amount ?? summary?.amount_total ?? 0).toFixed(2)}`}
               detail="Total reported amount"
             />
             <MoneyCard
               label="Paid amount"
-              value={`AUD ${Number(summary?.paid_amount ?? summary?.amount_paid ?? 0).toFixed(2)}`}
+              value={`GBP ${Number(summary?.paid_amount ?? summary?.amount_paid ?? 0).toFixed(2)}`}
               detail="Total paid amount"
             />
           </div>
@@ -195,7 +195,7 @@ export function AdminPaymentsPage() {
                   <BackOfficeTd>{transaction.provider || 'unknown'}</BackOfficeTd>
                   <BackOfficeTd>{transaction.payment_kind || 'payment'}</BackOfficeTd>
                   <BackOfficeTd>
-                    {transaction.currency || 'AUD'} {Number(transaction.amount || 0).toFixed(2)}
+                    {transaction.currency || 'GBP'} {Number(transaction.amount || 0).toFixed(2)}
                   </BackOfficeTd>
                   <BackOfficeTd>
                     <StatusBadge value={transaction.status} tone={statusTone(transaction.status)} />

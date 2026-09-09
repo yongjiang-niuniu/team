@@ -38,6 +38,8 @@ export function PaymentCancelPage() {
       const retrievalRequestId = Number(searchParams.get('retrieval_request_id') || '');
       const provider = getProvider(searchParams.get('provider'));
       const reference = searchParams.get('reference') || null;
+      const sessionId = searchParams.get('session_id') || null;
+      const transactionId = Number(searchParams.get('transaction_id') || '');
       const paymentKind = searchParams.get('payment_kind') === 'extension' ? 'extension' : 'initial_retrieval';
 
       if (!Number.isFinite(retrievalRequestId) || retrievalRequestId <= 0) {
@@ -56,8 +58,9 @@ export function PaymentCancelPage() {
           status: 'cancelled',
           provider,
           payment_kind: paymentKind,
-          checkout_reference: reference,
-          provider_payment_id: reference,
+          transaction_id: Number.isFinite(transactionId) && transactionId > 0 ? transactionId : null,
+          checkout_reference: sessionId || reference,
+          provider_payment_id: reference || sessionId,
           amount: Number(searchParams.get('amount') || '10'),
           currency: searchParams.get('currency') || 'GBP',
         });
