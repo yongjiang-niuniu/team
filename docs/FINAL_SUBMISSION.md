@@ -50,7 +50,7 @@ Comparison found **180 unchanged, 10 added, 36 modified and 0 removed** files. T
 | Retrieval/payment/referral/wiping | Corresponding modules and frontend pages | Payments/cloud files are demos; physical erasure not verified |
 | Tests | Latest source passes 102 backend tests | Historical report's 95-test run is separate evidence |
 | Launchers/configuration | Original launchers and `.env.example` files | Inspected but not executed |
-| Team process materials | 8 team meetings, 8 client/TA records and 3 sprint documents | Shared coursework remains private |
+| Team process materials | 8 team meetings, 8 client/TA records and 3 sprint documents | Original team attribution retained |
 | Original GitLab history | Project and two commit identifiers known | Full history and merge-request records not recovered |
 
 ## Report copies and attribution

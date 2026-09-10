@@ -28,4 +28,4 @@ No launcher, public tunnel, real OAuth login, SMTP delivery, production database
 
 Both ZIPs were checked for path traversal, unsafe links and size before extraction. Source and environment examples were reviewed using known credential/token patterns. No high-confidence real credential was found. Public OAuth client IDs and explicitly seeded demo passwords remain as source examples.
 
-No actual `.env`, runtime database, virtual environment or `node_modules` was included in the recovered ZIPs. Gitleaks was unavailable, and the complete GitLab history could not be scanned. This is a scoped archive review, not a security certification. Team/course documents remain private.
+No actual `.env`, runtime database, virtual environment or `node_modules` was included in the recovered ZIPs. Gitleaks was unavailable, and the complete GitLab history could not be scanned. This is a scoped archive review, not a security certification. Team/course documents retain their original attribution and provenance.
