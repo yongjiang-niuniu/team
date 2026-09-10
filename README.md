@@ -6,6 +6,8 @@ A web application for managing unwanted electronic devices from owner submission
 
 [Documentation](docs/README.md) · [Local setup](SETUP_AND_DEPLOYMENT.md) · [Final report](reports/COM6103_Team1_eWaste_Final_Report.pdf)
 
+**Paper version check, 10 September 2026:** the Overleaf compilation timed out, so no new exported PDF was added. The linked **16-page report remains the verified submitted version**; the recovered editable source was reviewed separately, without replacing the report or claiming new results.
+
 ## Project at a glance
 
 | Item | Details |
